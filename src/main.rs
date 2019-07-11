@@ -54,7 +54,6 @@ impl Game {
             let (frame_type, frame_score) = match rolls_left {
                 1 => score_frame(rolls[roll_id], 0, 0),
                 2 => score_frame(rolls[roll_id], rolls[roll_id + 1], 0),
-                3 => score_frame(rolls[roll_id], rolls[roll_id + 1], rolls[roll_id + 2]),
                 _ => score_frame(rolls[roll_id], rolls[roll_id + 1], rolls[roll_id + 2]),
             };
 
