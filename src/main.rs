@@ -2,7 +2,11 @@
 
 fn main() {}
 
-struct Game {}
+type GameScore = u64;
+
+struct Game {
+    current_score: GameScore,
+}
 
 enum RollStatus {
     Invalid,
@@ -10,15 +14,17 @@ enum RollStatus {
 
 impl Game {
     fn new() -> Game {
-        Game {}
+        Game { current_score: 0 }
     }
 
     fn roll(&mut self, pins: u8) -> RollStatus {
+        self.current_score += pins as GameScore;
+
         RollStatus::Invalid
     }
 
-    fn score(&self) -> u16 {
-        0
+    fn score(&self) -> GameScore {
+        self.current_score
     }
 }
 
