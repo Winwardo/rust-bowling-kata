@@ -1,6 +1,5 @@
 type GameScore = u64;
 
-    rolls: Vec<GameScore>,
 #[derive(Debug, PartialEq)]
 enum FrameType {
     Regular,
@@ -14,6 +13,7 @@ const MAX_FRAMES_ADD_1: usize = MAX_FRAMES + 1;
 const MAX_FRAMES_MINUS_1: usize = MAX_FRAMES - 1;
 const MAX_FRAMES_MINUS_2: usize = MAX_FRAMES - 2;
 const MAX_ROLL_COUNT: usize = (MAX_FRAMES * 2) + 2;
+const MAX_ROLL_COUNT_WITH_BUFFER: usize = MAX_ROLL_COUNT + 2;
 
 const STRIKE_SCORE: GameScore = 10;
 
@@ -28,7 +28,7 @@ fn score_frame(roll_1: GameScore, roll_2: GameScore, roll_3: GameScore) -> (Fram
 }
 
 struct Game {
-    rolls: [GameScore; MAX_ROLL_COUNT],
+    rolls: [GameScore; MAX_ROLL_COUNT_WITH_BUFFER],
     roll_count: usize,
 }
 
@@ -36,7 +36,7 @@ struct Game {
 impl Game {
     fn new() -> Game {
         Game {
-            rolls: [0; MAX_ROLL_COUNT],
+            rolls: [0; MAX_ROLL_COUNT_WITH_BUFFER],
             roll_count: 0,
         }
     }
@@ -54,19 +54,9 @@ impl Game {
 
         loop {
             assert!(frame_id < MAX_FRAMES_ADD_1, "Too many frames played.");
-            assert!(roll_id < rolls.len(), "Too many rolls played.");
+            assert!(roll_id < MAX_ROLL_COUNT, "Too many rolls played.");
 
-            let last_roll_id = roll_id;
-
-            // If we're in the penultimate roll or one before that, pad two extra fake "0" scores to simplify calculation
-            let (roll_1, roll_2, roll_3) = {
-                let rolls_left = rolls.len() - roll_id;
-                match rolls_left {
-                    1 => (rolls[roll_id], 0, 0),
-                    2 => (rolls[roll_id], rolls[roll_id + 1], 0),
-                    _ => (rolls[roll_id], rolls[roll_id + 1], rolls[roll_id + 2]),
-                }
-            };
+            let (roll_1, roll_2, roll_3) = (rolls[roll_id], rolls[roll_id + 1], rolls[roll_id + 2]);
 
             let (frame_type, frame_score) = match frame_id {
                 (0...MAX_FRAMES_MINUS_2) => score_frame(roll_1, roll_2, roll_3),
@@ -92,8 +82,6 @@ impl Game {
                     break;
                 }
             };
-
-            assert_ne!(last_roll_id, roll_id, "Did not advance.");
         }
 
         accumulated_score
