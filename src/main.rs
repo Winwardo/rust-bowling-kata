@@ -6,11 +6,6 @@ struct Game {
     rolls: Vec<GameScore>,
 }
 
-struct Score {
-    score: GameScore,
-    advance_by: usize,
-}
-
 enum FrameType {
     Regular,
     Spare,
