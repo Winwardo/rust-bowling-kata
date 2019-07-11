@@ -31,18 +31,15 @@ impl Game {
         self.rolls.push(pins);
     }
 
-    fn score(&self) -> GameScore {
+    fn score(&mut self) -> GameScore {
         let rolls = &self.rolls;
-        dbg!(rolls.len());
 
         let mut roll_id = 0;
         let mut frame_id = 0;
-        let mut score = 0;
+        let mut accumulated_score = 0;
 
         loop {
-            if frame_id > 10 {
-                panic!("Too many frames played.");
-            }
+            assert!(frame_id < 11, "Too many frames played.");
 
             let last_roll_id = roll_id;
 
@@ -63,7 +60,7 @@ impl Game {
                 },
                 10 => {
                     let (_, frame_score) = score_frame(rolls[roll_id], 0, 0);
-                    return score + frame_score;
+                    return accumulated_score + frame_score;
                 }
                 _ => panic!("Unexpected frame count"),
             };
@@ -72,13 +69,13 @@ impl Game {
                 FrameType::Regular | FrameType::Spare => 2,
                 FrameType::Strike => 1,
             };
-            score += frame_score;
+            accumulated_score += frame_score;
             frame_id += 1;
 
             assert_ne!(last_roll_id, roll_id, "Did not advance.");
         }
 
-        score
+        accumulated_score
     }
 }
 
@@ -91,7 +88,7 @@ mod tests {
 
     #[rstest]
     fn new_game_call_score_score_is_0() {
-        let game = Game::new();
+        let mut game = Game::new();
         assert_eq!(0, game.score());
     }
 
