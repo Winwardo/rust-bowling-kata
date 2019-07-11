@@ -45,8 +45,11 @@ impl Game {
             if roll_id >= rolls.len() {
                 break;
             }
-
             let rolls_left = rolls.len() - roll_id;
+
+            if frame_id == 10 {
+                println!("10th frame!!");
+            }
 
             let (frame_type, frame_score) = match rolls_left {
                 1 => score_frame(rolls[roll_id], 0, 0),
@@ -114,9 +117,11 @@ mod tests {
     #[rstest]
     fn twenty_0_in_a_row_score_is_0() {
         let mut game = Game::new();
-        (0..20).for_each(|_| {
+
+        for _ in 0..20 {
             game.roll(0);
-        });
+        }
+
         assert_eq!(0, game.score());
     }
 
@@ -190,8 +195,41 @@ mod tests {
         assert_eq!(50, game.score());
     }
 
-    // #[rstest]
-    // fn
+    #[rstest]
+    fn twelve_strikes_scores_300q() {
+        let mut game = Game::new();
+
+        for _ in 0..12 {
+            game.roll(10);
+        }
+
+        assert_eq!(300, game.score());
+    }
+
+    #[rstest]
+    fn ten_pairs_of_9_and_miss_scores_90() {
+        let mut game = Game::new();
+
+        for _ in 0..10 {
+            game.roll(9);
+            game.roll(0);
+        }
+
+        assert_eq!(90, game.score());
+    }
+
+    #[rstest]
+    fn ten_pairs_of_5_and_spare_then_final_5_scores_150q() {
+        let mut game = Game::new();
+
+        for _ in 0..10 {
+            game.roll(5);
+            game.roll(5);
+        }
+        game.roll(5);
+
+        assert_eq!(150, game.score());
+    }
 
     // #[rstest]
     // fn full_example_game() {
