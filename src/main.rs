@@ -8,51 +8,132 @@ enum RollStatus {
     Invalid,
 }
 
-enum FrameStatus {
-    None,
-    FirstBowl(GameScore),
-    SecondBowl(GameScore),
-    Spare,
+#[derive(Clone, Copy, Debug)]
+enum Frame {
+    NoBowls,
+    OneBowl(GameScore),
+    TwoBowls(GameScore, GameScore),
+    Spare(GameScore, GameScore),
     Strike,
 }
 
 struct Game {
     current_score: GameScore,
-    last_frame: FrameStatus,
+    last_frame: Option<Frame>,
+    current_frame: Frame,
 }
 
 impl Game {
     fn new() -> Game {
         Game {
             current_score: 0,
-            last_frame: FrameStatus::None,
+            last_frame: None,
+            current_frame: Frame::NoBowls,
         }
     }
 
     fn roll(&mut self, pins: GameScore) -> RollStatus {
-        self.current_score += pins;
+        dbg!(("Roll", pins));
 
-        match &self.last_frame {
-            FrameStatus::None => {
-                self.last_frame = FrameStatus::FirstBowl(pins);
-            }
-            FrameStatus::FirstBowl(last_score) => {
-                if last_score + pins == 10 {
-                    self.last_frame = FrameStatus::Spare;
+        let bonus = match dbg!(&self.last_frame) {
+            Some(last_frame) => match last_frame {
+                Frame::Spare(_, _) => match &self.current_frame {
+                    Frame::NoBowls => pins,
+                    _ => 0,
+                },
+                Frame::Strike => match &self.current_frame {
+                    Frame::NoBowls | Frame::OneBowl(_) => pins,
+                    _ => 0,
+                },
+                _ => 0,
+            },
+            None => 0,
+        };
+
+        self.current_frame = match &self.current_frame {
+            Frame::NoBowls => Frame::OneBowl(pins),
+            Frame::OneBowl(first_pins) => {
+                if *first_pins + pins == 10 {
+                    dbg!(("Spare!", *first_pins, pins));
+                    Frame::Spare(*first_pins, pins)
                 } else {
-                    self.last_frame = FrameStatus::SecondBowl(pins);
+                    Frame::TwoBowls(*first_pins, pins)
                 }
             }
-            FrameStatus::Spare => {
-                self.current_score += pins;
+            _ => {
+                panic!(
+                    "The current frame cannot have more than one bowl before moving to the next."
+                );
+            }
+        };
+
+        match &self.current_frame {
+            Frame::TwoBowls(_, _) | Frame::Spare(_, _) | Frame::Strike => {
+                dbg!("Swap over");
+                self.last_frame = Some(self.current_frame.clone());
+                self.current_frame = Frame::NoBowls;
             }
             _ => {}
         }
+
+        dbg!(bonus);
+
+        self.current_score += pins + bonus;
+
+        // match &self.last_frame {
+        //     Some(last_frame) => {
+        //         match &self.last_frame {
+        //             Frame::OneBowl, Frame::TwoBowls => {
+
+        //             }
+        //         }
+        //     }
+        //     None => {
+        //         // First frame
+
+        //     }
+        // }
+
+        // if self.frames.is_empty() {
+        //     self.frames.push(Frame::new())
+        // }
+
+        // let mut current_frame = self.frames.last_mut().unwrap();
+        // match current_frame.roll_1 {
+        //     Some(frame) => {
+
+        //     }
+        //     None => {
+        //         current_frame.roll_1 = Some(pins);
+        //         //panic!("whoops");
+        //     }
+        // }
+
+        // match &self.last_frame {
+        //     FrameStatus::None => {
+        //         self.last_frame = FrameStatus::FirstBowl(pins);
+        //     }
+        //     FrameStatus::FirstBowl(last_frame_score) => {
+        //         if last_frame_score + pins == 10 {
+        //             self.last_frame = FrameStatus::Spare;
+        //         } else {
+        //             self.last_frame = FrameStatus::SecondBowl(pins);
+        //         }
+        //     }
+        //     FrameStatus::SecondBowl(_) => {
+        //         self.last_frame = FrameStatus::None;
+        //     }
+        //     FrameStatus::Spare => {
+        //         self.current_score += pins;
+        //     }
+        //     _ => {}
+        // }
 
         RollStatus::Invalid
     }
 
     fn score(&self) -> GameScore {
+        //self.frames.into_iter().map(|x| x.score())
         self.current_score
     }
 }
@@ -127,8 +208,32 @@ mod tests {
 
         game.roll(4);
         game.roll(6);
-        game.roll(5);
+        game.roll(4);
 
-        assert_eq!(20, game.score());
+        assert_eq!(18, game.score());
+    }
+
+    #[rstest]
+    fn spare_adds_next_score_not_score_after_that() {
+        let mut game = Game::new();
+
+        game.roll(4);
+        game.roll(6);
+        game.roll(4);
+        game.roll(6);
+
+        assert_eq!(24, game.score());
+    }
+
+    #[rstest]
+    fn strike_adds_next_two_scores() {
+        let mut game = Game::new();
+
+        game.roll(4);
+        game.roll(6);
+        game.roll(4);
+        game.roll(6);
+
+        assert_eq!(30, game.score());
     }
 }
