@@ -1,0 +1,13 @@
+[package]
+name = "poker-kata"
+version = "0.1.0"
+authors = ["Topher Winward <winwardo@gmail.com>"]
+edition = "2018"
+
+[dependencies]
+regex = "1"
+itertools = "0.8"
+failure = "0.1.5"
+
+[dev-dependencies]
+rstest = "0.2.2"
