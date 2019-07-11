@@ -29,40 +29,6 @@ struct Score {
     advance_by: usize,
 }
 
-fn score_2(roll_1: GameScore, roll_2: GameScore) -> Score {
-    let idx = 0;
-    let mut score = roll_1 + roll_2;
-
-    if roll_1 == 10 {
-        // it's a strike
-        score += roll_2;
-    }
-
-    Score {
-        score: score,
-        advance_by: 2,
-    }
-}
-
-fn score_3(roll_1: GameScore, roll_2: GameScore, roll_3: GameScore) -> Score {
-    let mut score = roll_1 + roll_2 + roll_3;
-
-    if roll_1 == 10 {
-        // it's a strike
-        score += roll_2 + roll_3;
-    } else {
-        if roll_1 + roll_2 == 10 {
-            // it's a spare
-            score += roll_3;
-        }
-    }
-
-    Score {
-        score: score,
-        advance_by: 3,
-    }
-}
-
 fn score_4(roll_1: GameScore, roll_2: GameScore, roll_3: GameScore, roll_4: GameScore) -> Score {
     let mut score = roll_1 + roll_2 + roll_3 + roll_4;
     let mut advance_by = 2;
@@ -344,8 +310,7 @@ mod tests {
     fn strike_adds_next_two_scores() {
         let mut game = Game::new();
 
-        game.roll(4);
-        game.roll(6);
+        game.roll(10);
         game.roll(4);
         game.roll(6);
 
