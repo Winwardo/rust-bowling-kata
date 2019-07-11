@@ -11,31 +11,24 @@ struct Score {
     advance_by: usize,
 }
 
-fn score_4(roll_1: GameScore, roll_2: GameScore, roll_3: GameScore, roll_4: GameScore) -> Score {
-    dbg!(("score", roll_1, roll_2, roll_3, roll_4));
-
-    let score;
-    let advance_by;
-
+fn score_frame(roll_1: GameScore, roll_2: GameScore, roll_3: GameScore) -> Score {
     if roll_1 == 10 {
         // frame is a strike
-        println!("strike");
-        score = roll_1 + roll_2 + roll_3;
-        advance_by = 1;
+        Score {
+            score: roll_1 + roll_2 + roll_3,
+            advance_by: 1,
+        }
     } else if roll_1 + roll_2 == 10 {
         // frame is a spare
-        println!("spare");
-
-        score = roll_1 + roll_2 + roll_3;
-        advance_by = 2;
+        Score {
+            score: roll_1 + roll_2 + roll_3,
+            advance_by: 2,
+        }
     } else {
-        score = roll_1 + roll_2;
-        advance_by = 2;
-    }
-
-    Score {
-        score: score,
-        advance_by: advance_by,
+        Score {
+            score: roll_1 + roll_2,
+            advance_by: 2,
+        }
     }
 }
 
@@ -67,15 +60,14 @@ impl Game {
             let rolls_left = rolls.len() - idx;
 
             let out = match rolls_left {
-                1 => score_4(rolls[idx], 0, 0, 0),
-                2 => score_4(rolls[idx], rolls[idx + 1], 0, 0),
-                3 => score_4(rolls[idx], rolls[idx + 1], rolls[idx + 2], 0),
-                _ => score_4(rolls[idx], rolls[idx + 1], rolls[idx + 2], rolls[idx + 3]),
+                1 => score_frame(rolls[idx], 0, 0),
+                2 => score_frame(rolls[idx], rolls[idx + 1], 0),
+                3 => score_frame(rolls[idx], rolls[idx + 1], rolls[idx + 2]),
+                _ => score_frame(rolls[idx], rolls[idx + 1], rolls[idx + 2]),
             };
 
             score += out.score;
             idx += out.advance_by;
-            dbg!(out.advance_by);
 
             if idx == last_idx {
                 panic!("Did not advance");
