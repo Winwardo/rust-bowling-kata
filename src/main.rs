@@ -60,7 +60,7 @@ impl Game {
             };
 
             let (frame_type, frame_score) = match frame_id {
-                0..=FRAME_COUNT_MINUS_2 => score_frame(roll_1, roll_2, roll_3),
+                (0...FRAME_COUNT_MINUS_2) => score_frame(roll_1, roll_2, roll_3),
                 FRAME_COUNT_MINUS_1 => score_frame(roll_1, roll_2, 0), // Frame 9 cannot look ahead to possible bonus strikes
                 FRAME_COUNT => {
                     let (_, frame_score) = score_frame(roll_1, 0, 0);
