@@ -22,6 +22,10 @@ fn score_frame(roll_1: GameScore, roll_2: GameScore, roll_3: GameScore) -> (Fram
     }
 }
 
+const FRAME_COUNT: usize = 10;
+const FRAME_COUNT_MINUS_1: usize = FRAME_COUNT - 1;
+const FRAME_COUNT_MINUS_2: usize = FRAME_COUNT - 2;
+
 #[allow(dead_code)]
 impl Game {
     fn new() -> Game {
@@ -33,10 +37,6 @@ impl Game {
     }
 
     fn score(&mut self) -> GameScore {
-        /**
-         * Loop through every roll.
-         * For every roll, look two rolls ahead (or )
-         */
         while self.rolls.len() < 21 {
             &self.rolls.push(0);
         }
@@ -48,12 +48,7 @@ impl Game {
 
         loop {
             assert!(frame_id < 11, "Too many frames played.");
-
-            if roll_id >= rolls.len() {
-                // println!("")
-                panic!();
-                break;
-            }
+            assert!(roll_id < rolls.len(), "Too many rolls played.");
 
             let rolls_left = rolls.len() - roll_id;
             let last_roll_id = roll_id;
@@ -65,9 +60,9 @@ impl Game {
             };
 
             let (frame_type, frame_score) = match frame_id {
-                0..=8 => score_frame(roll_1, roll_2, roll_3),
-                9 => score_frame(roll_1, roll_2, 0), // Frame 9 cannot look ahead to possible bonus strikes
-                10 => {
+                0..=FRAME_COUNT_MINUS_2 => score_frame(roll_1, roll_2, roll_3),
+                FRAME_COUNT_MINUS_1 => score_frame(roll_1, roll_2, 0), // Frame 9 cannot look ahead to possible bonus strikes
+                FRAME_COUNT => {
                     let (_, frame_score) = score_frame(roll_1, 0, 0);
                     (FrameType::Final, frame_score)
                 }
