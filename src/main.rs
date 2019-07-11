@@ -1,9 +1,6 @@
 type GameScore = u64;
 
-struct Game {
     rolls: Vec<GameScore>,
-}
-
 #[derive(Debug, PartialEq)]
 enum FrameType {
     Regular,
@@ -12,74 +9,89 @@ enum FrameType {
     Final,
 }
 
+const MAX_FRAMES: usize = 10;
+const MAX_FRAMES_ADD_1: usize = MAX_FRAMES + 1;
+const MAX_FRAMES_MINUS_1: usize = MAX_FRAMES - 1;
+const MAX_FRAMES_MINUS_2: usize = MAX_FRAMES - 2;
+const MAX_ROLL_COUNT: usize = (MAX_FRAMES * 2) + 2;
+
+const STRIKE_SCORE: GameScore = 10;
+
 fn score_frame(roll_1: GameScore, roll_2: GameScore, roll_3: GameScore) -> (FrameType, GameScore) {
-    if roll_1 == 10 {
+    if roll_1 == STRIKE_SCORE {
         (FrameType::Strike, roll_1 + roll_2 + roll_3)
-    } else if roll_1 + roll_2 == 10 {
+    } else if roll_1 + roll_2 == STRIKE_SCORE {
         (FrameType::Spare, roll_1 + roll_2 + roll_3)
     } else {
         (FrameType::Regular, roll_1 + roll_2)
     }
 }
 
-const FRAME_COUNT: usize = 10;
-const FRAME_COUNT_MINUS_1: usize = FRAME_COUNT - 1;
-const FRAME_COUNT_MINUS_2: usize = FRAME_COUNT - 2;
+struct Game {
+    rolls: [GameScore; MAX_ROLL_COUNT],
+    roll_count: usize,
+}
 
 #[allow(dead_code)]
 impl Game {
     fn new() -> Game {
-        Game { rolls: Vec::new() }
+        Game {
+            rolls: [0; MAX_ROLL_COUNT],
+            roll_count: 0,
+        }
     }
 
     fn roll(&mut self, pins: GameScore) {
-        self.rolls.push(pins);
+        self.rolls[self.roll_count] = pins;
+        self.roll_count += 1;
     }
 
-    fn score(&mut self) -> GameScore {
-        while self.rolls.len() < 21 {
-            &self.rolls.push(0);
-        }
-
+    fn score(&self) -> GameScore {
         let rolls = &self.rolls;
         let mut roll_id = 0;
         let mut frame_id = 0;
         let mut accumulated_score = 0;
 
         loop {
-            assert!(frame_id < 11, "Too many frames played.");
+            assert!(frame_id < MAX_FRAMES_ADD_1, "Too many frames played.");
             assert!(roll_id < rolls.len(), "Too many rolls played.");
 
-            let rolls_left = rolls.len() - roll_id;
             let last_roll_id = roll_id;
 
-            let (roll_1, roll_2, roll_3) = match rolls_left {
-                1 => (rolls[roll_id], 0, 0),
-                2 => (rolls[roll_id], rolls[roll_id + 1], 0),
-                _ => (rolls[roll_id], rolls[roll_id + 1], rolls[roll_id + 2]),
+            // If we're in the penultimate roll or one before that, pad two extra fake "0" scores to simplify calculation
+            let (roll_1, roll_2, roll_3) = {
+                let rolls_left = rolls.len() - roll_id;
+                match rolls_left {
+                    1 => (rolls[roll_id], 0, 0),
+                    2 => (rolls[roll_id], rolls[roll_id + 1], 0),
+                    _ => (rolls[roll_id], rolls[roll_id + 1], rolls[roll_id + 2]),
+                }
             };
 
             let (frame_type, frame_score) = match frame_id {
-                (0...FRAME_COUNT_MINUS_2) => score_frame(roll_1, roll_2, roll_3),
-                FRAME_COUNT_MINUS_1 => score_frame(roll_1, roll_2, 0), // Frame 9 cannot look ahead to possible bonus strikes
-                FRAME_COUNT => {
+                (0...MAX_FRAMES_MINUS_2) => score_frame(roll_1, roll_2, roll_3),
+                MAX_FRAMES_MINUS_1 => score_frame(roll_1, roll_2, 0), // Frame 9 cannot look ahead to possible bonus strikes
+                MAX_FRAMES => {
                     let (_, frame_score) = score_frame(roll_1, 0, 0);
                     (FrameType::Final, frame_score)
                 }
                 _ => panic!("Unexpected frame count"),
             };
 
-            roll_id += match frame_type {
-                FrameType::Regular | FrameType::Spare => 2,
-                FrameType::Strike => 1,
-                FrameType::Final => 0,
-            };
             accumulated_score += frame_score;
             frame_id += 1;
 
-            if frame_type == FrameType::Final {
-                break;
-            }
+            match frame_type {
+                FrameType::Regular | FrameType::Spare => {
+                    roll_id += 2;
+                }
+                FrameType::Strike => {
+                    roll_id += 1;
+                }
+                FrameType::Final => {
+                    break;
+                }
+            };
 
             assert_ne!(last_roll_id, roll_id, "Did not advance.");
         }
@@ -97,7 +109,7 @@ mod tests {
 
     #[rstest]
     fn new_game_call_score_score_is_0() {
-        let mut game = Game::new();
+        let game = Game::new();
         assert_eq!(0, game.score());
     }
 
