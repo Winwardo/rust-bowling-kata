@@ -1,3 +1,5 @@
+#![allow(dead_code)]
+
 fn main() {}
 
 struct Game {}
@@ -7,7 +9,7 @@ impl Game {
         Game {}
     }
 
-    fn roll(pins: u8) {}
+    fn roll(&mut self, pins: u8) {}
     fn score(&self) -> u16 {
         0
     }
@@ -21,7 +23,7 @@ mod tests {
     use super::*;
 
     #[rstest]
-    fn new_game__call_score__score_is_0() {
+    fn new_game_call_score_score_is_0() {
         let game = Game::new();
         assert_eq!(0, game.score());
     }
