@@ -98,8 +98,8 @@ impl Game {
                 1 => score_4(rolls[idx], 0, 0, 0),
                 2 => score_4(rolls[idx], rolls[idx + 1], 0, 0),
                 3 => score_4(rolls[idx], rolls[idx + 1], rolls[idx + 2], 0),
-                4 => score_4(rolls[idx], rolls[idx + 1], rolls[idx + 2], rolls[idx + 3]),
-                _ => panic!("No"),
+                _ => score_4(rolls[idx], rolls[idx + 1], rolls[idx + 2], rolls[idx + 3]),
+                //_ => panic!("No"),
             };
 
             score += out.score;
@@ -315,5 +315,17 @@ mod tests {
         game.roll(6);
 
         assert_eq!(30, game.score());
+    }
+
+    #[rstest]
+    fn two_strikes_adds_next_two_scores() {
+        let mut game = Game::new();
+
+        game.roll(10);
+        game.roll(10);
+        game.roll(4);
+        game.roll(4);
+
+        assert_eq!(50, game.score());
     }
 }
