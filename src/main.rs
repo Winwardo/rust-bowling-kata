@@ -1,27 +1,9 @@
-#![allow(dead_code)]
-
 fn main() {}
 
 type GameScore = u64;
 
-enum RollStatus {
-    Invalid,
-}
-
-#[derive(Clone, Copy, Debug)]
-enum Frame {
-    NoBowls,
-    OneBowl(GameScore),
-    TwoBowls(GameScore, GameScore),
-    Spare(GameScore, GameScore),
-    Strike,
-}
-
 struct Game {
     rolls: Vec<GameScore>,
-    current_score: GameScore,
-    last_frame: Option<Frame>,
-    current_frame: Frame,
 }
 
 struct Score {
@@ -51,36 +33,18 @@ fn score_4(roll_1: GameScore, roll_2: GameScore, roll_3: GameScore, roll_4: Game
     }
 }
 
+#[allow(dead_code)]
 impl Game {
     fn new() -> Game {
-        Game {
-            rolls: Vec::new(),
-            current_score: 0,
-            last_frame: None,
-            current_frame: Frame::NoBowls,
-        }
+        Game { rolls: Vec::new() }
     }
 
-    fn roll(&mut self, pins: GameScore) -> RollStatus {
+    fn roll(&mut self, pins: GameScore) {
         self.rolls.push(pins);
-        RollStatus::Invalid
     }
 
     fn score(&self) -> GameScore {
-        //let lastState = Frame::NoBowls;
-
-        // for x
-
-        // self.rolls.iter().windows(2);
-        // let mut frames = Vec::<GameScore>new();
-
         let rolls = &self.rolls;
-
-        // if rolls.len() == 0 {
-        //     return 0;
-        // } else {
-
-        // }
 
         dbg!(rolls.len());
 
@@ -113,101 +77,6 @@ impl Game {
         }
 
         score
-
-        // match rolls.len() {
-        //     // 0 => 0,
-        //     // 1 => rolls[0],
-        //     // 2 => score_2(rolls[0], rolls[1]),
-        //     // 3 => score_3(rolls[0], rolls[1], rolls[2]),
-        //     _ => {
-
-        //         // let mut idx = 0;
-        //         // let mut total = 0;
-
-        //         // loop {
-        //         //     let last_idx = idx;
-        //         //     let mut score = rolls[idx + 0] + rolls[idx + 1] + rolls[idx + 2];
-
-        //         //     if rolls[idx + 0] == 10 {
-        //         //         // it's a strike
-        //         //         score += rolls[idx + 1] + rolls[idx + 2];
-        //         //         idx += 1;
-        //         //     } else {
-        //         //         if rolls[idx + 0] + rolls[idx + 1] == 10 {
-        //         //             // it's a spare
-        //         //             score += rolls[idx + 2];
-        //         //             idx += 2;
-        //         //         }
-        //         //     }
-
-        //         //     total += score;
-        //         // }
-
-        //         // total
-        //     }
-        // }
-
-        // let mut score = rolls[0] + rolls[1];
-
-        // let mut count = 2;
-        // let mut counted_spare = false;
-
-        // loop {
-        //     // work in chunks
-
-        //     let last_count = count;
-        //     if count >= rolls.len() {
-        //         break;
-        //     }
-        //     println!("------ {}", count);
-
-        //     // let roll_1 = rolls[count];
-        //     // let roll_2 = rolls[count + 1];
-        //     // let roll_3 = rolls[count + 2];
-        //     // let roll_4 = rolls[count + 3];
-
-        //     let was_spare = (rolls[count] + rolls[count + 1]) == 10;
-        //     if was_spare {}
-
-        //     // // if count == 0 {
-        //     // //     score += rolls[0];
-        //     // //     count += 1;
-        //     // // } else if count == 1 {
-        //     // //     score += rolls[1];
-        //     // //     count += 1;
-        //     // // } else
-        //     // {
-        //     //     let was_strike = rolls[count - 1] == 10;
-        //     //     if was_strike {
-        //     //         count += 1;
-        //     //     } else {
-        //     // let was_spare = (rolls[count - 1] + rolls[count - 2]) == 10;
-        //     //         dbg!(was_spare);
-        //     //         if was_spare {
-        //     //             if counted_spare == false {
-        //     //                 score += rolls[count];
-        //     //                 score += rolls[count];
-        //     //                 count += 1;
-        //     //                 counted_spare = true;
-        //     //             } else {
-        //     //                 counted_spare = false;
-        //     //             }
-        //     //         } else {
-        //     //             score += rolls[count];
-        //     //             count += 1;
-        //     //         }
-        //     //     }
-
-        //     //     //let last_frame_score = rolls[count-1] + rolls[count-2];
-        //     //     //if
-        //     // }
-
-        //     if count == last_count {
-        //         panic!("ahh");
-        //     }
-        // }
-
-        // score
     }
 }
 
