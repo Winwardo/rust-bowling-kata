@@ -62,59 +62,11 @@ impl Game {
                     _ => score_frame(rolls[roll_id], rolls[roll_id + 1], 0),
                 },
                 10 => {
-                    let (frame_type, frame_score) = score_frame(rolls[roll_id], 0, 0);
-                    // let final_bonus = match frame_type {
-                    //     FrameType::Regular => (frame_type, frame_score),
-                    //     FrameType::Spare => (frame_type, frame_score + rolls[roll_id]),
-                    //     FrameType::Strike => (
-                    //         frame_type,
-                    //         frame_score + rolls[roll_id] + rolls[roll_id + 1],
-                    //     ),
-                    // };
-                    // let final_bonus = match frame_type {
-                    //     FrameType::Regular => 0,
-                    //     FrameType::Spare => rolls[roll_id],
-                    //     FrameType::Strike => rolls[roll_id] + rolls[roll_id + 1],
-                    // };
+                    let (_, frame_score) = score_frame(rolls[roll_id], 0, 0);
                     return score + frame_score;
                 }
-                // 10 => match rolls_left {
-                //     1 => score_frame(rolls[roll_id], 0, 0),
-                //     2 => score_frame(rolls[roll_id], rolls[roll_id + 1], 0),
-                //     3 => score_frame(rolls[roll_id], rolls[roll_id + 1], rolls[roll_id + 2]),
-                //     _ => panic!("Invalid bowl count"),
-                // },
-                _ => panic!("Nah"),
+                _ => panic!("Unexpected frame count"),
             };
-
-            // let (frame_type, frame_score) = if frame_id < 10 {
-            // match rolls_left {
-            //     1 => score_frame(rolls[roll_id], 0, 0),
-            //     2 => score_frame(rolls[roll_id], rolls[roll_id + 1], 0),
-            //     _ => score_frame(rolls[roll_id], rolls[roll_id + 1], rolls[roll_id + 2]),
-            // }
-            // } else {
-            //     dbg!(frame_id);
-
-            //     if rolls[roll_id] == 10 {
-            // (FrameType::Strike, rolls[roll_id] + rolls[roll_id + 1])
-            //     //                 } else if rolls[roll_id] + rolls[roll_id+1] == 10 {
-            //     // (
-            //     //                         FrameType::Spare,
-            //     //                         rolls[roll_id] + rolls[roll_id + 1],
-            //     //                     )
-            //     //                 }
-            //     } else {
-            //         (FrameType::Regular, rolls[roll_id] + rolls[roll_id + 1])
-            //     }
-
-            //     //score_frame(rolls[roll_id], 0, 0)
-            //     // match rolls_left {
-            //     //     1 => score_frame(rolls[roll_id], 0, 0),
-            //     //     2 => score_frame(rolls[roll_id], rolls[roll_id + 1], 0),
-            //     //     _ => score_frame(rolls[roll_id], rolls[roll_id + 1], rolls[roll_id + 2]),
-            //     // }
-            // };
 
             roll_id += match frame_type {
                 FrameType::Regular | FrameType::Spare => 2,
@@ -122,33 +74,6 @@ impl Game {
             };
             score += frame_score;
             frame_id += 1;
-
-            // if frame_id == 11 {
-            //     match frame_type {
-            //         FrameType::Spare => {
-            //             score += rolls[roll_id];
-            //         }
-            //         FrameType::Strike => {
-            //             println!("strike, {} {}", rolls[roll_id], roll_id);
-            //             //score += rolls[roll_id];
-            //             println!("strike2");
-
-            //             //score += rolls[roll_id + 1];
-            //             println!("strike3");
-            //         }
-            //         _ => {}
-            //     }
-
-            //     break;
-            // }
-            // if frame_id < 10 {
-
-            // } else {
-            //     // if rolls_left >
-            //     dbg!((rolls_left, frame_type));
-            //     // println!("{}")
-            //     panic!("huh");
-            // }
 
             assert_ne!(last_roll_id, roll_id, "Did not advance.");
         }
@@ -316,30 +241,30 @@ mod tests {
         assert_eq!(150, game.score());
     }
 
-    // #[rstest]
-    // fn full_example_game() {
-    //     let mut game = Game::new();
+    #[rstest]
+    fn full_example_game() {
+        let mut game = Game::new();
 
-    //     game.roll(1);
-    //     game.roll(4);
-    //     game.roll(4);
-    //     game.roll(5);
-    //     game.roll(6);
-    //     game.roll(4);
-    //     game.roll(5);
-    //     game.roll(5);
-    //     game.roll(10);
-    //     game.roll(0);
-    //     game.roll(1);
-    //     game.roll(7);
-    //     game.roll(3);
-    //     game.roll(6);
-    //     game.roll(4);
-    //     game.roll(10);
-    //     game.roll(2);
-    //     game.roll(8);
-    //     game.roll(6);
+        game.roll(1);
+        game.roll(4);
+        game.roll(4);
+        game.roll(5);
+        game.roll(6);
+        game.roll(4);
+        game.roll(5);
+        game.roll(5);
+        game.roll(10);
+        game.roll(0);
+        game.roll(1);
+        game.roll(7);
+        game.roll(3);
+        game.roll(6);
+        game.roll(4);
+        game.roll(10);
+        game.roll(2);
+        game.roll(8);
+        game.roll(6);
 
-    //     assert_eq!(133, game.score());
-    // }
+        assert_eq!(133, game.score());
+    }
 }
