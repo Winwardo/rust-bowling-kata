@@ -3,8 +3,12 @@ fn main() {}
 struct Game {}
 
 impl Game {
+    fn new() -> Game {
+        Game {}
+    }
+
     fn roll(pins: u8) {}
-    fn score() -> u16 {
+    fn score(&self) -> u16 {
         0
     }
 }
@@ -17,7 +21,8 @@ mod tests {
     use super::*;
 
     #[rstest]
-    fn base() {
-        //assert_eq!(false, bowl());
+    fn new_game__call_score__score_is_0() {
+        let game = Game::new();
+        assert_eq!(0, game.score());
     }
 }
