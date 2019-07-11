@@ -55,4 +55,19 @@ mod tests {
         assert_eq!(9, game.score());
     }
 
+    #[rstest]
+    fn first_roll_is_10_score_is_10() {
+        let mut game = Game::new();
+        game.roll(10);
+        assert_eq!(10, game.score());
+    }
+
+    #[rstest]
+    fn twenty_0_in_a_row_score_is_0() {
+        let mut game = Game::new();
+        (0..20).for_each(|_| {
+            game.roll(0);
+        });
+        assert_eq!(0, game.score());
+    }
 }
