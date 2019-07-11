@@ -1,15 +1,16 @@
-#[allow(dead_code)]
-fn bowl() -> bool {
-    false
-}
+fn main() {}
 
-fn main() {
-    
+struct Game {}
+
+impl Game {
+    fn roll(pins: u8) {}
+    fn score() -> u16 {
+        0
+    }
 }
 
 #[cfg(test)]
 mod tests {
-    // Note this useful idiom: importing names from outer (for mod tests) scope
     extern crate rstest;
     use rstest::rstest;
 
@@ -17,6 +18,6 @@ mod tests {
 
     #[rstest]
     fn base() {
-        assert_eq!(false, bowl());
+        //assert_eq!(false, bowl());
     }
 }
