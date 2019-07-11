@@ -4,12 +4,21 @@ fn main() {}
 
 struct Game {}
 
+enum RollStatus {
+    First,
+    Second,
+    Third,
+    Invalid,
+}
+
 impl Game {
     fn new() -> Game {
         Game {}
     }
 
-    fn roll(&mut self, pins: u8) {}
+    fn roll(&mut self, pins: u8) -> RollStatus {
+        RollStatus::Invalid
+    }
     fn score(&self) -> u16 {
         0
     }
