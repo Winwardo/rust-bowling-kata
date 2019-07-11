@@ -4,11 +4,12 @@ struct Game {
     rolls: Vec<GameScore>,
 }
 
-#[derive(Debug)]
+#[derive(Debug, PartialEq)]
 enum FrameType {
     Regular,
     Spare,
     Strike,
+    Final,
 }
 
 fn score_frame(roll_1: GameScore, roll_2: GameScore, roll_3: GameScore) -> (FrameType, GameScore) {
@@ -32,8 +33,15 @@ impl Game {
     }
 
     fn score(&mut self) -> GameScore {
-        let rolls = &self.rolls;
+        /**
+         * Loop through every roll.
+         * For every roll, look two rolls ahead (or )
+         */
+        while self.rolls.len() < 21 {
+            &self.rolls.push(0);
+        }
 
+        let rolls = &self.rolls;
         let mut roll_id = 0;
         let mut frame_id = 0;
         let mut accumulated_score = 0;
@@ -41,26 +49,27 @@ impl Game {
         loop {
             assert!(frame_id < 11, "Too many frames played.");
 
-            let last_roll_id = roll_id;
-
             if roll_id >= rolls.len() {
+                // println!("")
+                panic!();
                 break;
             }
+
             let rolls_left = rolls.len() - roll_id;
+            let last_roll_id = roll_id;
+
+            let (roll_1, roll_2, roll_3) = match rolls_left {
+                1 => (rolls[roll_id], 0, 0),
+                2 => (rolls[roll_id], rolls[roll_id + 1], 0),
+                _ => (rolls[roll_id], rolls[roll_id + 1], rolls[roll_id + 2]),
+            };
 
             let (frame_type, frame_score) = match frame_id {
-                0..=8 => match rolls_left {
-                    1 => score_frame(rolls[roll_id], 0, 0),
-                    2 => score_frame(rolls[roll_id], rolls[roll_id + 1], 0),
-                    _ => score_frame(rolls[roll_id], rolls[roll_id + 1], rolls[roll_id + 2]),
-                },
-                9 => match rolls_left {
-                    1 => score_frame(rolls[roll_id], 0, 0),
-                    _ => score_frame(rolls[roll_id], rolls[roll_id + 1], 0),
-                },
+                0..=8 => score_frame(roll_1, roll_2, roll_3),
+                9 => score_frame(roll_1, roll_2, 0), // Frame 9 cannot look ahead to possible bonus strikes
                 10 => {
-                    let (_, frame_score) = score_frame(rolls[roll_id], 0, 0);
-                    return accumulated_score + frame_score;
+                    let (_, frame_score) = score_frame(roll_1, 0, 0);
+                    (FrameType::Final, frame_score)
                 }
                 _ => panic!("Unexpected frame count"),
             };
@@ -68,9 +77,14 @@ impl Game {
             roll_id += match frame_type {
                 FrameType::Regular | FrameType::Spare => 2,
                 FrameType::Strike => 1,
+                FrameType::Final => 0,
             };
             accumulated_score += frame_score;
             frame_id += 1;
+
+            if frame_type == FrameType::Final {
+                break;
+            }
 
             assert_ne!(last_roll_id, roll_id, "Did not advance.");
         }
