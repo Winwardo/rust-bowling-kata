@@ -11,24 +11,19 @@ struct Score {
     advance_by: usize,
 }
 
-fn score_frame(roll_1: GameScore, roll_2: GameScore, roll_3: GameScore) -> Score {
+enum FrameType {
+    Regular,
+    Spare,
+    Strike,
+}
+
+fn score_frame(roll_1: GameScore, roll_2: GameScore, roll_3: GameScore) -> (FrameType, GameScore) {
     if roll_1 == 10 {
-        // frame is a strike
-        Score {
-            score: roll_1 + roll_2 + roll_3,
-            advance_by: 1,
-        }
+        (FrameType::Strike, roll_1 + roll_2 + roll_3)
     } else if roll_1 + roll_2 == 10 {
-        // frame is a spare
-        Score {
-            score: roll_1 + roll_2 + roll_3,
-            advance_by: 2,
-        }
+        (FrameType::Spare, roll_1 + roll_2 + roll_3)
     } else {
-        Score {
-            score: roll_1 + roll_2,
-            advance_by: 2,
-        }
+        (FrameType::Regular, roll_1 + roll_2)
     }
 }
 
@@ -45,33 +40,34 @@ impl Game {
     fn score(&self) -> GameScore {
         let rolls = &self.rolls;
 
-        dbg!(rolls.len());
-
-        let mut idx = 0;
+        let mut roll_id = 0;
+        let mut frame_id = 0;
         let mut score = 0;
 
         loop {
-            let last_idx = idx;
+            let last_roll_id = roll_id;
 
-            if idx >= rolls.len() {
+            if roll_id >= rolls.len() {
                 break;
             }
 
-            let rolls_left = rolls.len() - idx;
+            let rolls_left = rolls.len() - roll_id;
 
-            let out = match rolls_left {
-                1 => score_frame(rolls[idx], 0, 0),
-                2 => score_frame(rolls[idx], rolls[idx + 1], 0),
-                3 => score_frame(rolls[idx], rolls[idx + 1], rolls[idx + 2]),
-                _ => score_frame(rolls[idx], rolls[idx + 1], rolls[idx + 2]),
+            let (frame_type, frame_score) = match rolls_left {
+                1 => score_frame(rolls[roll_id], 0, 0),
+                2 => score_frame(rolls[roll_id], rolls[roll_id + 1], 0),
+                3 => score_frame(rolls[roll_id], rolls[roll_id + 1], rolls[roll_id + 2]),
+                _ => score_frame(rolls[roll_id], rolls[roll_id + 1], rolls[roll_id + 2]),
             };
 
-            score += out.score;
-            idx += out.advance_by;
+            score += frame_score;
+            roll_id += match frame_type {
+                FrameType::Regular | FrameType::Spare => 2,
+                FrameType::Strike => 1,
+            };
+            frame_id += 1;
 
-            if idx == last_idx {
-                panic!("Did not advance");
-            }
+            assert_ne!(last_roll_id, roll_id, "Did not advance.");
         }
 
         score
