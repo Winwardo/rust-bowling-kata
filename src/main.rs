@@ -70,4 +70,25 @@ mod tests {
         });
         assert_eq!(0, game.score());
     }
+
+    #[rstest]
+    fn spare_then_zero_score_is_10() {
+        let mut game = Game::new();
+
+        game.roll(5);
+        game.roll(5);
+        game.roll(0);
+
+        assert_eq!(10, game.score());
+    }
+
+    #[rstest]
+    fn strike_then_zero_score_is_10() {
+        let mut game = Game::new();
+
+        game.roll(10);
+        game.roll(0);
+
+        assert_eq!(10, game.score());
+    }
 }
