@@ -4,21 +4,50 @@ fn main() {}
 
 type GameScore = u64;
 
-struct Game {
-    current_score: GameScore,
-}
-
 enum RollStatus {
     Invalid,
 }
 
+enum FrameStatus {
+    None,
+    FirstBowl(GameScore),
+    SecondBowl(GameScore),
+    Spare,
+    Strike,
+}
+
+struct Game {
+    current_score: GameScore,
+    last_frame: FrameStatus,
+}
+
 impl Game {
     fn new() -> Game {
-        Game { current_score: 0 }
+        Game {
+            current_score: 0,
+            last_frame: FrameStatus::None,
+        }
     }
 
-    fn roll(&mut self, pins: u8) -> RollStatus {
-        self.current_score += pins as GameScore;
+    fn roll(&mut self, pins: GameScore) -> RollStatus {
+        self.current_score += pins;
+
+        match &self.last_frame {
+            FrameStatus::None => {
+                self.last_frame = FrameStatus::FirstBowl(pins);
+            }
+            FrameStatus::FirstBowl(last_score) => {
+                if last_score + pins == 10 {
+                    self.last_frame = FrameStatus::Spare;
+                } else {
+                    self.last_frame = FrameStatus::SecondBowl(pins);
+                }
+            }
+            FrameStatus::Spare => {
+                self.current_score += pins;
+            }
+            _ => {}
+        }
 
         RollStatus::Invalid
     }
@@ -75,8 +104,8 @@ mod tests {
     fn spare_then_zero_score_is_10() {
         let mut game = Game::new();
 
-        game.roll(5);
-        game.roll(5);
+        game.roll(4);
+        game.roll(6);
         game.roll(0);
 
         assert_eq!(10, game.score());
@@ -90,5 +119,16 @@ mod tests {
         game.roll(0);
 
         assert_eq!(10, game.score());
+    }
+
+    #[rstest]
+    fn spare_adds_next_score() {
+        let mut game = Game::new();
+
+        game.roll(4);
+        game.roll(6);
+        game.roll(5);
+
+        assert_eq!(20, game.score());
     }
 }
