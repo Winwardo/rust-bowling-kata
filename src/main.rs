@@ -63,7 +63,6 @@ impl Game {
                 2 => score_4(rolls[idx], rolls[idx + 1], 0, 0),
                 3 => score_4(rolls[idx], rolls[idx + 1], rolls[idx + 2], 0),
                 _ => score_4(rolls[idx], rolls[idx + 1], rolls[idx + 2], rolls[idx + 3]),
-                //_ => panic!("No"),
             };
 
             score += out.score;
@@ -196,5 +195,32 @@ mod tests {
         game.roll(4);
 
         assert_eq!(50, game.score());
+    }
+
+    #[rstest]
+    fn full_example_game() {
+        let mut game = Game::new();
+
+        game.roll(1);
+        game.roll(4);
+        game.roll(4);
+        game.roll(5);
+        game.roll(6);
+        game.roll(4);
+        game.roll(5);
+        game.roll(5);
+        game.roll(10);
+        game.roll(0);
+        game.roll(1);
+        game.roll(7);
+        game.roll(3);
+        game.roll(6);
+        game.roll(4);
+        game.roll(10);
+        game.roll(2);
+        game.roll(8);
+        game.roll(6);
+
+        assert_eq!(133, game.score());
     }
 }
