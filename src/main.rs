@@ -65,15 +65,17 @@ fn score_3(roll_1: GameScore, roll_2: GameScore, roll_3: GameScore) -> Score {
 
 fn score_4(roll_1: GameScore, roll_2: GameScore, roll_3: GameScore, roll_4: GameScore) -> Score {
     let mut score = roll_1 + roll_2 + roll_3 + roll_4;
-    let mut advance_by = 0;
+    let mut advance_by = 2;
 
     if roll_1 == 10 {
         // it's a strike
         score += roll_2 + roll_3;
+        advance_by = 1;
     } else {
         if roll_1 + roll_2 == 10 {
             // it's a spare
             score += roll_3;
+            advance_by = 2;
         }
     }
 
@@ -126,16 +128,10 @@ impl Game {
             dbg!(rolls_left);
 
             let out = match rolls_left {
-                0 => Score {
-                    score: 0,
-                    advance_by: 1,
-                },
-                1 => Score {
-                    score: rolls[idx],
-                    advance_by: 1,
-                },
-                2 => score_2(rolls[idx], rolls[idx + 1]),
-                3 => score_3(rolls[idx], rolls[idx + 1], rolls[idx + 2]),
+                0 => score_4(0, 0, 0, 0),
+                1 => score_4(rolls[idx], 0, 0, 0),
+                2 => score_4(rolls[idx], rolls[idx + 1], 0, 0),
+                3 => score_4(rolls[idx], rolls[idx + 1], rolls[idx + 2], 0),
                 4 => score_4(rolls[idx], rolls[idx + 1], rolls[idx + 2], rolls[idx + 3]),
                 _ => panic!("No"),
             };
@@ -284,7 +280,7 @@ mod tests {
     }
 
     #[rstest]
-    fn two_rolls_are_4_score_is_9() {
+    fn two_rolls_are_4_score_is_8() {
         let mut game = Game::new();
         game.roll(4);
         game.roll(4);
