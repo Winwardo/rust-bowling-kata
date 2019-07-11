@@ -18,14 +18,75 @@ enum Frame {
 }
 
 struct Game {
+    rolls: Vec<GameScore>,
     current_score: GameScore,
     last_frame: Option<Frame>,
     current_frame: Frame,
 }
 
+struct Score {
+    score: GameScore,
+    advance_by: usize,
+}
+
+fn score_2(roll_1: GameScore, roll_2: GameScore) -> Score {
+    let idx = 0;
+    let mut score = roll_1 + roll_2;
+
+    if roll_1 == 10 {
+        // it's a strike
+        score += roll_2;
+    }
+
+    Score {
+        score: score,
+        advance_by: 2,
+    }
+}
+
+fn score_3(roll_1: GameScore, roll_2: GameScore, roll_3: GameScore) -> Score {
+    let mut score = roll_1 + roll_2 + roll_3;
+
+    if roll_1 == 10 {
+        // it's a strike
+        score += roll_2 + roll_3;
+    } else {
+        if roll_1 + roll_2 == 10 {
+            // it's a spare
+            score += roll_3;
+        }
+    }
+
+    Score {
+        score: score,
+        advance_by: 3,
+    }
+}
+
+fn score_4(roll_1: GameScore, roll_2: GameScore, roll_3: GameScore, roll_4: GameScore) -> Score {
+    let mut score = roll_1 + roll_2 + roll_3 + roll_4;
+    let mut advance_by = 0;
+
+    if roll_1 == 10 {
+        // it's a strike
+        score += roll_2 + roll_3;
+    } else {
+        if roll_1 + roll_2 == 10 {
+            // it's a spare
+            score += roll_3;
+        }
+    }
+
+    Score {
+        score: score,
+        advance_by: advance_by,
+    }
+}
+
 impl Game {
     fn new() -> Game {
         Game {
+            rolls: Vec::new(),
             current_score: 0,
             last_frame: None,
             current_frame: Frame::NoBowls,
@@ -33,108 +94,158 @@ impl Game {
     }
 
     fn roll(&mut self, pins: GameScore) -> RollStatus {
-        dbg!(("Roll", pins));
-
-        let bonus = match dbg!(&self.last_frame) {
-            Some(last_frame) => match last_frame {
-                Frame::Spare(_, _) => match &self.current_frame {
-                    Frame::NoBowls => pins,
-                    _ => 0,
-                },
-                Frame::Strike => match &self.current_frame {
-                    Frame::NoBowls | Frame::OneBowl(_) => pins,
-                    _ => 0,
-                },
-                _ => 0,
-            },
-            None => 0,
-        };
-
-        self.current_frame = match &self.current_frame {
-            Frame::NoBowls => Frame::OneBowl(pins),
-            Frame::OneBowl(first_pins) => {
-                if *first_pins + pins == 10 {
-                    dbg!(("Spare!", *first_pins, pins));
-                    Frame::Spare(*first_pins, pins)
-                } else {
-                    Frame::TwoBowls(*first_pins, pins)
-                }
-            }
-            _ => {
-                panic!(
-                    "The current frame cannot have more than one bowl before moving to the next."
-                );
-            }
-        };
-
-        match &self.current_frame {
-            Frame::TwoBowls(_, _) | Frame::Spare(_, _) | Frame::Strike => {
-                dbg!("Swap over");
-                self.last_frame = Some(self.current_frame.clone());
-                self.current_frame = Frame::NoBowls;
-            }
-            _ => {}
-        }
-
-        dbg!(bonus);
-
-        self.current_score += pins + bonus;
-
-        // match &self.last_frame {
-        //     Some(last_frame) => {
-        //         match &self.last_frame {
-        //             Frame::OneBowl, Frame::TwoBowls => {
-
-        //             }
-        //         }
-        //     }
-        //     None => {
-        //         // First frame
-
-        //     }
-        // }
-
-        // if self.frames.is_empty() {
-        //     self.frames.push(Frame::new())
-        // }
-
-        // let mut current_frame = self.frames.last_mut().unwrap();
-        // match current_frame.roll_1 {
-        //     Some(frame) => {
-
-        //     }
-        //     None => {
-        //         current_frame.roll_1 = Some(pins);
-        //         //panic!("whoops");
-        //     }
-        // }
-
-        // match &self.last_frame {
-        //     FrameStatus::None => {
-        //         self.last_frame = FrameStatus::FirstBowl(pins);
-        //     }
-        //     FrameStatus::FirstBowl(last_frame_score) => {
-        //         if last_frame_score + pins == 10 {
-        //             self.last_frame = FrameStatus::Spare;
-        //         } else {
-        //             self.last_frame = FrameStatus::SecondBowl(pins);
-        //         }
-        //     }
-        //     FrameStatus::SecondBowl(_) => {
-        //         self.last_frame = FrameStatus::None;
-        //     }
-        //     FrameStatus::Spare => {
-        //         self.current_score += pins;
-        //     }
-        //     _ => {}
-        // }
-
+        self.rolls.push(pins);
         RollStatus::Invalid
     }
 
     fn score(&self) -> GameScore {
-        //self.frames.into_iter().map(|x| x.score())
-        self.current_score
+        //let lastState = Frame::NoBowls;
+
+        // for x
+
+        // self.rolls.iter().windows(2);
+        // let mut frames = Vec::<GameScore>new();
+
+        let rolls = &self.rolls;
+
+        // if rolls.len() == 0 {
+        //     return 0;
+        // } else {
+
+        // }
+
+        dbg!(rolls.len());
+
+        let mut idx = 0;
+        let mut score = 0;
+
+        loop {
+            let last_idx = idx;
+
+            let rolls_left = rolls.len() - idx;
+            dbg!(rolls_left);
+
+            let out = match rolls_left {
+                0 => Score {
+                    score: 0,
+                    advance_by: 1,
+                },
+                1 => Score {
+                    score: rolls[idx],
+                    advance_by: 1,
+                },
+                2 => score_2(rolls[idx], rolls[idx + 1]),
+                3 => score_3(rolls[idx], rolls[idx + 1], rolls[idx + 2]),
+                4 => score_4(rolls[idx], rolls[idx + 1], rolls[idx + 2], rolls[idx + 3]),
+                _ => panic!("No"),
+            };
+
+            score += out.score;
+            idx += out.advance_by;
+
+            if idx == last_idx {
+                panic!("Did not advance");
+            }
+
+            break;
+        }
+
+        score
+
+        // match rolls.len() {
+        //     // 0 => 0,
+        //     // 1 => rolls[0],
+        //     // 2 => score_2(rolls[0], rolls[1]),
+        //     // 3 => score_3(rolls[0], rolls[1], rolls[2]),
+        //     _ => {
+
+        //         // let mut idx = 0;
+        //         // let mut total = 0;
+
+        //         // loop {
+        //         //     let last_idx = idx;
+        //         //     let mut score = rolls[idx + 0] + rolls[idx + 1] + rolls[idx + 2];
+
+        //         //     if rolls[idx + 0] == 10 {
+        //         //         // it's a strike
+        //         //         score += rolls[idx + 1] + rolls[idx + 2];
+        //         //         idx += 1;
+        //         //     } else {
+        //         //         if rolls[idx + 0] + rolls[idx + 1] == 10 {
+        //         //             // it's a spare
+        //         //             score += rolls[idx + 2];
+        //         //             idx += 2;
+        //         //         }
+        //         //     }
+
+        //         //     total += score;
+        //         // }
+
+        //         // total
+        //     }
+        // }
+
+        // let mut score = rolls[0] + rolls[1];
+
+        // let mut count = 2;
+        // let mut counted_spare = false;
+
+        // loop {
+        //     // work in chunks
+
+        //     let last_count = count;
+        //     if count >= rolls.len() {
+        //         break;
+        //     }
+        //     println!("------ {}", count);
+
+        //     // let roll_1 = rolls[count];
+        //     // let roll_2 = rolls[count + 1];
+        //     // let roll_3 = rolls[count + 2];
+        //     // let roll_4 = rolls[count + 3];
+
+        //     let was_spare = (rolls[count] + rolls[count + 1]) == 10;
+        //     if was_spare {}
+
+        //     // // if count == 0 {
+        //     // //     score += rolls[0];
+        //     // //     count += 1;
+        //     // // } else if count == 1 {
+        //     // //     score += rolls[1];
+        //     // //     count += 1;
+        //     // // } else
+        //     // {
+        //     //     let was_strike = rolls[count - 1] == 10;
+        //     //     if was_strike {
+        //     //         count += 1;
+        //     //     } else {
+        //     // let was_spare = (rolls[count - 1] + rolls[count - 2]) == 10;
+        //     //         dbg!(was_spare);
+        //     //         if was_spare {
+        //     //             if counted_spare == false {
+        //     //                 score += rolls[count];
+        //     //                 score += rolls[count];
+        //     //                 count += 1;
+        //     //                 counted_spare = true;
+        //     //             } else {
+        //     //                 counted_spare = false;
+        //     //             }
+        //     //         } else {
+        //     //             score += rolls[count];
+        //     //             count += 1;
+        //     //         }
+        //     //     }
+
+        //     //     //let last_frame_score = rolls[count-1] + rolls[count-2];
+        //     //     //if
+        //     // }
+
+        //     if count == last_count {
+        //         panic!("ahh");
+        //     }
+        // }
+
+        // score
     }
 }
 
@@ -170,6 +281,14 @@ mod tests {
         let mut game = Game::new();
         game.roll(10);
         assert_eq!(10, game.score());
+    }
+
+    #[rstest]
+    fn two_rolls_are_4_score_is_9() {
+        let mut game = Game::new();
+        game.roll(4);
+        game.roll(4);
+        assert_eq!(8, game.score());
     }
 
     #[rstest]
