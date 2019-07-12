@@ -224,7 +224,7 @@ mod tests {
     }
 
     #[rstest]
-    fn twelve_strikes_scores_300q() {
+    fn twelve_strikes_scores_300() {
         let mut game = Game::new();
 
         for _ in 0..12 {
@@ -247,7 +247,7 @@ mod tests {
     }
 
     #[rstest]
-    fn ten_pairs_of_5_and_spare_then_final_5_scores_150q() {
+    fn ten_pairs_of_5_and_spare_then_final_5_scores_150() {
         let mut game = Game::new();
 
         for _ in 0..10 {
@@ -260,7 +260,7 @@ mod tests {
     }
 
     #[rstest]
-    fn clever_test() {
+    fn ninth_frame_is_strike_then_last_frame_is_10_10_9_do_not_double_bonus() {
         let mut game = Game::new();
 
         for _ in 0..16 {
