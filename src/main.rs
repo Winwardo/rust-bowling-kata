@@ -38,8 +38,7 @@ impl Game {
         let mut roll_id = 0;
         let mut accumulated_score = 0;
 
-        for frame_id in 0..MAX_FRAMES {
-            assert!(frame_id < MAX_FRAMES, "Too many frames played.");
+        for _ in 0..MAX_FRAMES {
             assert!(roll_id < MAX_ROLL_COUNT, "Too many rolls played.");
 
             let roll_1 = rolls[roll_id + 0];
