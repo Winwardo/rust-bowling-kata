@@ -49,20 +49,32 @@ impl Game {
             // Always add the first roll
             accumulated_score += roll_1;
 
-            // Add bonuses
-            if roll_1 == STRIKE_SCORE {
-                // Strike
-                accumulated_score += roll_2 + roll_3;
-                roll_id += 1; // Only one roll in this frame due to Strike
+            let frame_type = if roll_1 == STRIKE_SCORE {
+                FrameType::Strike
             } else if roll_1 + roll_2 == STRIKE_SCORE {
-                // Spare
-                accumulated_score += roll_2 + roll_3;
-                roll_id += 2;
+                FrameType::Spare
             } else {
-                // Regular frame, add second roll
-                accumulated_score += roll_2;
-                roll_id += 2;
-            }
+                FrameType::Regular
+            };
+
+            // Add bonuses based on roll type
+            match frame_type {
+                FrameType::Strike => {
+                    // Two bonus balls
+                    accumulated_score += roll_2 + roll_3;
+                    roll_id += 1; // Only one roll in this frame due to Strike
+                }
+                FrameType::Spare => {
+                    // Second  roll to make spare, one bonus ball
+                    accumulated_score += roll_2 + roll_3;
+                    roll_id += 2;
+                }
+                FrameType::Regular => {
+                    // Regular frame, add second roll, no bonus ball
+                    accumulated_score += roll_2;
+                    roll_id += 2;
+                }
+            };
         }
 
         accumulated_score
