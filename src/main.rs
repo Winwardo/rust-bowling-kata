@@ -53,6 +53,7 @@ impl Game {
         let mut accumulated_score = 0;
 
         loop {
+            println!("---");
             assert!(frame_id < MAX_FRAMES_ADD_1, "Too many frames played.");
             assert!(roll_id < MAX_ROLL_COUNT, "Too many rolls played.");
 
@@ -60,13 +61,19 @@ impl Game {
             let roll_2 = rolls[roll_id + 1];
             let roll_3 = rolls[roll_id + 2];
 
+            dbg!(frame_id);
+            dbg!((roll_1, roll_2, roll_3));
+
             let (frame_type, frame_score) = match frame_id {
-                (0...MAX_FRAMES_MINUS_2) => score_frame(roll_1, roll_2, roll_3),
-                MAX_FRAMES_MINUS_1 => score_frame(roll_1, roll_2, 0),
-                MAX_FRAMES => {
-                    let (_, frame_score) = score_frame(roll_1, 0, 0);
-                    (FrameType::Final, frame_score)
+                (0...8) => {
+                    println!("hello");
+                    let r = score_frame(roll_1, roll_2, roll_3);
+                    dbg!(&r);
+                    r
                 }
+                MAX_FRAMES_MINUS_1 => (FrameType::Final, roll_1 + roll_2 + roll_3),
+                //MAX_FRAMES_MINUS_1 => score_frame(roll_1, roll_2, 0),
+                // 10 => (FrameType::Final, roll_1 + roll_2 + roll_3),
                 _ => panic!("Unexpected frame count"),
             };
 
@@ -141,6 +148,20 @@ mod tests {
         }
 
         assert_eq!(0, game.score());
+    }
+
+    #[rstest]
+    fn eighteen_0_in_a_row_score_is_with_10s_0() {
+        let mut game = Game::new();
+
+        for _ in 0..18 {
+            game.roll(0);
+        }
+        game.roll(10);
+        game.roll(10);
+        game.roll(10);
+
+        assert_eq!(30, game.score());
     }
 
     #[rstest]
@@ -247,6 +268,22 @@ mod tests {
         game.roll(5);
 
         assert_eq!(150, game.score());
+    }
+
+    #[rstest]
+    fn clever_test() {
+        let mut game = Game::new();
+
+        for _ in 0..16 {
+            game.roll(0)
+        }
+
+        game.roll(10);
+        game.roll(10);
+        game.roll(10);
+        game.roll(9);
+
+        assert_eq!(59, game.score());
     }
 
     #[rstest]
