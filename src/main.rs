@@ -32,17 +32,15 @@ impl Game {
     }
 
     fn score(&self) -> GameScore {
-        let rolls = &self.rolls;
-
         let mut roll_id = 0;
         let mut accumulated_score = 0;
 
         for _ in 0..MAX_FRAMES {
             assert!(roll_id < MAX_ROLL_COUNT, "Too many rolls played.");
 
-            let roll_1 = rolls[roll_id + 0];
-            let roll_2 = rolls[roll_id + 1];
-            let roll_3 = rolls[roll_id + 2];
+            let roll_1 = self.rolls[roll_id + 0];
+            let roll_2 = self.rolls[roll_id + 1];
+            let roll_3 = self.rolls[roll_id + 2];
 
             // Always add the first roll
             accumulated_score += roll_1;
