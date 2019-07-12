@@ -5,30 +5,16 @@ enum FrameType {
     Regular,
     Spare,
     Strike,
-    Final,
 }
 
 const MAX_FRAMES: usize = 10;
 const MAX_FRAMES_ADD_1: usize = MAX_FRAMES + 1;
-const MAX_FRAMES_MINUS_1: usize = MAX_FRAMES - 1;
-const MAX_FRAMES_MINUS_2: usize = MAX_FRAMES - 2;
-const MAX_ROLL_COUNT: usize = (MAX_FRAMES * 2) + 2;
-const MAX_ROLL_COUNT_WITH_BUFFER: usize = MAX_ROLL_COUNT + 2;
+const MAX_ROLL_COUNT: usize = (MAX_FRAMES * 2) + 1;
 
 const STRIKE_SCORE: GameScore = 10;
 
-fn score_frame(roll_1: GameScore, roll_2: GameScore, roll_3: GameScore) -> (FrameType, GameScore) {
-    if roll_1 == STRIKE_SCORE {
-        (FrameType::Strike, roll_1 + roll_2 + roll_3)
-    } else if roll_1 + roll_2 == STRIKE_SCORE {
-        (FrameType::Spare, roll_1 + roll_2 + roll_3)
-    } else {
-        (FrameType::Regular, roll_1 + roll_2)
-    }
-}
-
 struct Game {
-    rolls: [GameScore; MAX_ROLL_COUNT_WITH_BUFFER],
+    rolls: [GameScore; MAX_ROLL_COUNT],
     roll_count: usize,
 }
 
@@ -36,7 +22,7 @@ struct Game {
 impl Game {
     fn new() -> Game {
         Game {
-            rolls: [0; MAX_ROLL_COUNT_WITH_BUFFER],
+            rolls: [0; MAX_ROLL_COUNT],
             roll_count: 0,
         }
     }
@@ -52,18 +38,22 @@ impl Game {
         let mut frame_id = 0;
         let mut accumulated_score = 0;
 
-        loop {
-            assert!(frame_id < MAX_FRAMES_ADD_1, "Too many frames played.");
+        while frame_id < MAX_FRAMES {
+            assert!(frame_id < MAX_FRAMES, "Too many frames played.");
             assert!(roll_id < MAX_ROLL_COUNT, "Too many rolls played.");
 
-            let roll_1 = rolls[roll_id + 0];
-            let roll_2 = rolls[roll_id + 1];
-            let roll_3 = rolls[roll_id + 2];
+            let (frame_type, frame_score) = {
+                let roll_1 = rolls[roll_id + 0];
+                let roll_2 = rolls[roll_id + 1];
+                let roll_3 = rolls[roll_id + 2];
 
-            let (frame_type, frame_score) = match frame_id {
-                (0...MAX_FRAMES_MINUS_2) => score_frame(roll_1, roll_2, roll_3),
-                MAX_FRAMES_MINUS_1 => (FrameType::Final, roll_1 + roll_2 + roll_3),
-                _ => panic!("Unexpected frame count"),
+                if roll_1 == STRIKE_SCORE {
+                    (FrameType::Strike, roll_1 + roll_2 + roll_3)
+                } else if roll_1 + roll_2 == STRIKE_SCORE {
+                    (FrameType::Spare, roll_1 + roll_2 + roll_3)
+                } else {
+                    (FrameType::Regular, roll_1 + roll_2)
+                }
             };
 
             accumulated_score += frame_score;
@@ -75,9 +65,6 @@ impl Game {
                 }
                 FrameType::Strike => {
                     roll_id += 1;
-                }
-                FrameType::Final => {
-                    break;
                 }
             };
         }
