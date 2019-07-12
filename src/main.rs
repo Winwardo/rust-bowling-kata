@@ -53,7 +53,6 @@ impl Game {
         let mut accumulated_score = 0;
 
         loop {
-            println!("---");
             assert!(frame_id < MAX_FRAMES_ADD_1, "Too many frames played.");
             assert!(roll_id < MAX_ROLL_COUNT, "Too many rolls played.");
 
@@ -61,19 +60,9 @@ impl Game {
             let roll_2 = rolls[roll_id + 1];
             let roll_3 = rolls[roll_id + 2];
 
-            dbg!(frame_id);
-            dbg!((roll_1, roll_2, roll_3));
-
             let (frame_type, frame_score) = match frame_id {
-                (0...8) => {
-                    println!("hello");
-                    let r = score_frame(roll_1, roll_2, roll_3);
-                    dbg!(&r);
-                    r
-                }
+                (0...MAX_FRAMES_MINUS_2) => score_frame(roll_1, roll_2, roll_3),
                 MAX_FRAMES_MINUS_1 => (FrameType::Final, roll_1 + roll_2 + roll_3),
-                //MAX_FRAMES_MINUS_1 => score_frame(roll_1, roll_2, 0),
-                // 10 => (FrameType::Final, roll_1 + roll_2 + roll_3),
                 _ => panic!("Unexpected frame count"),
             };
 
