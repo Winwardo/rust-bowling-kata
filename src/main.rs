@@ -8,7 +8,6 @@ enum FrameType {
 }
 
 const MAX_FRAMES: usize = 10;
-const MAX_FRAMES_ADD_1: usize = MAX_FRAMES + 1;
 const MAX_ROLL_COUNT: usize = (MAX_FRAMES * 2) + 1;
 
 const STRIKE_SCORE: GameScore = 10;
