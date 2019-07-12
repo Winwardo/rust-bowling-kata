@@ -34,39 +34,35 @@ impl Game {
 
     fn score(&self) -> GameScore {
         let rolls = &self.rolls;
+
         let mut roll_id = 0;
-        let mut frame_id = 0;
         let mut accumulated_score = 0;
 
-        while frame_id < MAX_FRAMES {
+        for frame_id in 0..MAX_FRAMES {
             assert!(frame_id < MAX_FRAMES, "Too many frames played.");
             assert!(roll_id < MAX_ROLL_COUNT, "Too many rolls played.");
 
-            let (frame_type, frame_score) = {
-                let roll_1 = rolls[roll_id + 0];
-                let roll_2 = rolls[roll_id + 1];
-                let roll_3 = rolls[roll_id + 2];
+            let roll_1 = rolls[roll_id + 0];
+            let roll_2 = rolls[roll_id + 1];
+            let roll_3 = rolls[roll_id + 2];
 
-                if roll_1 == STRIKE_SCORE {
-                    (FrameType::Strike, roll_1 + roll_2 + roll_3)
-                } else if roll_1 + roll_2 == STRIKE_SCORE {
-                    (FrameType::Spare, roll_1 + roll_2 + roll_3)
-                } else {
-                    (FrameType::Regular, roll_1 + roll_2)
-                }
-            };
+            // Always add the first roll
+            accumulated_score += roll_1;
 
-            accumulated_score += frame_score;
-            frame_id += 1;
-
-            match frame_type {
-                FrameType::Regular | FrameType::Spare => {
-                    roll_id += 2;
-                }
-                FrameType::Strike => {
-                    roll_id += 1;
-                }
-            };
+            // Add bonuses
+            if roll_1 == STRIKE_SCORE {
+                // Strike
+                accumulated_score += roll_2 + roll_3;
+                roll_id += 1; // Only one roll in this frame due to Strike
+            } else if roll_1 + roll_2 == STRIKE_SCORE {
+                // Spare
+                accumulated_score += roll_2 + roll_3;
+                roll_id += 2;
+            } else {
+                // Regular frame, add second roll
+                accumulated_score += roll_2;
+                roll_id += 2;
+            }
         }
 
         accumulated_score
