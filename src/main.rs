@@ -54,6 +54,9 @@ impl Game {
             if pins == STRIKE_SCORE {
                 self.past_frames.push(Frame::new());
             };
+        } else if current_frame.roll_2.is_none() {
+            current_frame.roll_2 = Some(pins);
+            self.past_frames.push(Frame::new());
         }
 
         // match current_frame {
