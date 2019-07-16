@@ -7,6 +7,12 @@ enum FrameType {
     Strike,
 }
 
+struct Frame {
+    roll_1: GameScore,
+    roll_2: Option<GameScore>,
+    roll_3: Option<GameScore>,
+}
+
 const MAX_FRAMES: usize = 10;
 const MAX_ROLL_COUNT: usize = (MAX_FRAMES * 2) + 1;
 
@@ -14,80 +20,107 @@ const STRIKE_SCORE: GameScore = 10;
 
 struct Game {
     // current_frame: Option<FrameType>,
-    last_roll: Option<GameScore>,
-    past_frames: Vec<FrameType>,
+    //last_roll: Option<GameScore>,
+    past_frames: Vec<Frame>,
 }
 
 #[allow(dead_code)]
 impl Game {
     fn new() -> Game {
         Game {
-            last_roll: None,
             past_frames: Vec::new(),
         }
     }
 
     fn roll(&mut self, pins: GameScore) {
-        match self.last_roll {
-            Some(last_roll) => {
-                if pins + last_roll == STRIKE_SCORE {
-                    self.past_frames.push(FrameType::Spare(last_roll, pins));
+        match self.past_frames.last_mut() {
+            Some(ref mut frame) => {
+                if frame.roll_1 == STRIKE_SCORE {
+                    let frame = Frame {
+                        roll_1: pins,
+                        roll_2: None,
+                        roll_3: None,
+                    };
+                    self.past_frames.push(frame);
                 } else {
-                    self.past_frames.push(FrameType::Regular(last_roll, pins));
+                    frame.roll_2 = Some(pins);
                 }
-
-                self.last_roll = None;
             }
-            None => {
-                if pins == STRIKE_SCORE {
-                    self.past_frames.push(FrameType::Strike);
-                } else {
-                    self.last_roll = Some(pins);
-                }
+            _ => {
+                let frame = Frame {
+                    roll_1: pins,
+                    roll_2: None,
+                    roll_3: None,
+                };
+                self.past_frames.push(frame);
             }
         };
+
+        // match self.last_roll {
+        //     Some(last_roll) => {
+        //         if pins + last_roll == STRIKE_SCORE {
+        //             self.past_frames.push(FrameType::Spare(last_roll, pins));
+        //         } else {
+        //             self.past_frames.push(FrameType::Regular(last_roll, pins));
+        //         }
+
+        //         self.last_roll = None;
+        //     }
+        //     None => {
+        //         if pins == STRIKE_SCORE {
+        //             self.past_frames.push(FrameType::Strike);
+        //         } else {
+        //             self.last_roll = Some(pins);
+        //         }
+        //     }
+        // };
     }
 
     fn score(&self) -> GameScore {
-        dbg!(self.last_roll);
-        let mut score = self.last_roll.unwrap_or(0);
-
-        dbg!(&self.past_frames);
-
-        for frame_id in 0..self.past_frames.len() {
-            dbg!(frame_id);
-            let current = &self.past_frames[frame_id];
-            let next = self.past_frames.get(frame_id + 1);
-            let next_2 = self.past_frames.get(frame_id + 2);
-
-            dbg!(current);
-
-            score += match current {
-                FrameType::Regular(first, second) => *first + *second,
-                FrameType::Spare(_, _) => match next {
-                    Some(FrameType::Regular(first, _)) => STRIKE_SCORE + first,
-                    Some(FrameType::Spare(first, _)) => STRIKE_SCORE + first,
-                    Some(FrameType::Strike) => STRIKE_SCORE + STRIKE_SCORE,
-                    None => STRIKE_SCORE + self.last_roll.unwrap_or(0),
-                },
-                FrameType::Strike => match next {
-                    Some(FrameType::Regular(first, second)) => STRIKE_SCORE + first + second,
-                    Some(FrameType::Spare(first, second)) => STRIKE_SCORE + first + second,
-                    Some(FrameType::Strike) => match next_2 {
-                        Some(FrameType::Regular(first, _)) => STRIKE_SCORE + STRIKE_SCORE + first,
-                        Some(FrameType::Spare(first, _)) => STRIKE_SCORE + STRIKE_SCORE + first,
-                        Some(FrameType::Strike) => STRIKE_SCORE + STRIKE_SCORE + STRIKE_SCORE,
-                        None => STRIKE_SCORE + STRIKE_SCORE + self.last_roll.unwrap_or(0),
-                    },
-                    None => STRIKE_SCORE + self.last_roll.unwrap_or(0),
-                },
-            };
-
-            // let (current, next) = frames[0]
-            // if frame_id > self.frames.
+        match self.past_frames.last() {
+            Some(frame) => frame.roll_1 + frame.roll_2.unwrap_or(0) + frame.roll_3.unwrap_or(0),
+            _ => 0,
         }
 
-        score
+        // dbg!(self.last_roll);
+        // let mut score = self.last_roll.unwrap_or(0);
+
+        // //dbg!(&self.past_frames);
+
+        // for frame_id in 0..self.past_frames.len() {
+        //     dbg!(frame_id);
+        //     let current = &self.past_frames[frame_id];
+        //     let next = self.past_frames.get(frame_id + 1);
+        //     let next_2 = self.past_frames.get(frame_id + 2);
+
+        //     dbg!(current);
+
+        //     // score += match current {
+        //     //     FrameType::Regular(first, second) => *first + *second,
+        //     //     FrameType::Spare(_, _) => match next {
+        //     //         Some(FrameType::Regular(first, _)) => STRIKE_SCORE + first,
+        //     //         Some(FrameType::Spare(first, _)) => STRIKE_SCORE + first,
+        //     //         Some(FrameType::Strike) => STRIKE_SCORE + STRIKE_SCORE,
+        //     //         None => STRIKE_SCORE + self.last_roll.unwrap_or(0),
+        //     //     },
+        //     //     FrameType::Strike => match next {
+        //     //         Some(FrameType::Regular(first, second)) => STRIKE_SCORE + first + second,
+        //     //         Some(FrameType::Spare(first, second)) => STRIKE_SCORE + first + second,
+        //     //         Some(FrameType::Strike) => match next_2 {
+        //     //             Some(FrameType::Regular(first, _)) => STRIKE_SCORE + STRIKE_SCORE + first,
+        //     //             Some(FrameType::Spare(first, _)) => STRIKE_SCORE + STRIKE_SCORE + first,
+        //     //             Some(FrameType::Strike) => STRIKE_SCORE + STRIKE_SCORE + STRIKE_SCORE,
+        //     //             None => STRIKE_SCORE + STRIKE_SCORE + self.last_roll.unwrap_or(0),
+        //     //         },
+        //     //         None => STRIKE_SCORE + self.last_roll.unwrap_or(0),
+        //     //     },
+        //     // };
+
+        //     // let (current, next) = frames[0]
+        //     // if frame_id > self.frames.
+        // }
+
+        // score
     }
 }
 
