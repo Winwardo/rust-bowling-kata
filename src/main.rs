@@ -1,10 +1,7 @@
 type GameScore = u64;
 
-#[derive(Debug, PartialEq)]
 enum FrameType {
-    Regular,
-    Spare,
-    Strike,
+    OneBowl(GameScore),
 }
 
 const MAX_FRAMES: usize = 10;
@@ -12,68 +9,18 @@ const MAX_ROLL_COUNT: usize = (MAX_FRAMES * 2) + 1;
 
 const STRIKE_SCORE: GameScore = 10;
 
-struct Game {
-    rolls: [GameScore; MAX_ROLL_COUNT],
-    roll_count: usize,
-}
+struct Game {}
 
 #[allow(dead_code)]
 impl Game {
     fn new() -> Game {
-        Game {
-            rolls: [0; MAX_ROLL_COUNT],
-            roll_count: 0,
-        }
+        Game {}
     }
 
-    fn roll(&mut self, pins: GameScore) {
-        self.rolls[self.roll_count] = pins;
-        self.roll_count += 1;
-    }
+    fn roll(&mut self, pins: GameScore) {}
 
     fn score(&self) -> GameScore {
-        let mut roll_id = 0;
-        let mut accumulated_score = 0;
-
-        for _ in 0..MAX_FRAMES {
-            assert!(roll_id < MAX_ROLL_COUNT, "Too many rolls played.");
-
-            let roll_1 = self.rolls[roll_id + 0];
-            let roll_2 = self.rolls[roll_id + 1];
-            let roll_3 = self.rolls[roll_id + 2];
-
-            // Always add the first roll
-            accumulated_score += roll_1;
-
-            let frame_type = if roll_1 == STRIKE_SCORE {
-                FrameType::Strike
-            } else if roll_1 + roll_2 == STRIKE_SCORE {
-                FrameType::Spare
-            } else {
-                FrameType::Regular
-            };
-
-            // Add bonuses based on roll type
-            match frame_type {
-                FrameType::Strike => {
-                    // Two bonus balls
-                    accumulated_score += roll_2 + roll_3;
-                    roll_id += 1; // Only one roll in this frame due to Strike
-                }
-                FrameType::Spare => {
-                    // Second  roll to make spare, one bonus ball
-                    accumulated_score += roll_2 + roll_3;
-                    roll_id += 2;
-                }
-                FrameType::Regular => {
-                    // Regular frame, add second roll, no bonus ball
-                    accumulated_score += roll_2;
-                    roll_id += 2;
-                }
-            };
-        }
-
-        accumulated_score
+        0
     }
 }
 
