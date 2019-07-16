@@ -46,17 +46,42 @@ impl Game {
 
     fn roll(&mut self, pins: GameScore) {
         // if self.current_frame.is_none() {
+        let count = self.past_frames.len();
+
         let mut current_frame = self.past_frames.last_mut().unwrap();
+        dbg!(count);
 
-        if current_frame.roll_1.is_none() {
-            current_frame.roll_1 = Some(pins);
+        if count == MAX_FRAMES {
+            println!("HERE");
+            dbg!(&current_frame);
 
-            if pins == STRIKE_SCORE {
+            if current_frame.roll_1.is_none() {
+                println!("roll 1");
+                current_frame.roll_1 = Some(pins);
+            } else if current_frame.roll_2.is_none() {
+                println!("roll 2");
+                current_frame.roll_2 = Some(pins);
+            } else {
+                println!("roll 3");
+                dbg!(current_frame.roll_1.unwrap_or(0) + current_frame.roll_2.unwrap_or(0));
+
+                if current_frame.roll_1.unwrap_or(0) + current_frame.roll_2.unwrap_or(0)
+                    >= STRIKE_SCORE
+                {
+                    current_frame.roll_3 = Some(pins);
+                }
+            }
+        } else {
+            if current_frame.roll_1.is_none() {
+                current_frame.roll_1 = Some(pins);
+
+                if pins == STRIKE_SCORE {
+                    self.past_frames.push(Frame::new());
+                };
+            } else if current_frame.roll_2.is_none() {
+                current_frame.roll_2 = Some(pins);
                 self.past_frames.push(Frame::new());
-            };
-        } else if current_frame.roll_2.is_none() {
-            current_frame.roll_2 = Some(pins);
-            self.past_frames.push(Frame::new());
+            }
         }
 
         // match current_frame {
@@ -96,38 +121,48 @@ impl Game {
 
         for frame_id in 0..self.past_frames.len() {
             dbg!(score);
+
             let current = &self.past_frames[frame_id];
-            let next = self.past_frames.get(frame_id + 1);
-            let next_2 = self.past_frames.get(frame_id + 2);
 
-            if current.roll_1.unwrap_or(0) == STRIKE_SCORE {
-                score += STRIKE_SCORE;
-
-                match next {
-                    Some(frame_1) => {
-                        let a = frame_1.roll_1.unwrap_or(0);
-                        score += a;
-                        if a == STRIKE_SCORE {
-                            match next_2 {
-                                Some(frame_2) => {
-                                    score += frame_2.roll_1.unwrap_or(0);
-                                }
-                                None => {}
-                            }
-                        } else {
-                            score += frame_1.roll_2.unwrap_or(0);
-                        }
-                    }
-                    None => {}
-                }
-            } else if current.roll_1.unwrap_or(0) + current.roll_2.unwrap_or(0) == STRIKE_SCORE {
-                score += STRIKE_SCORE;
-                score += match next {
-                    Some(frame) => frame.roll_1.unwrap_or(0),
-                    None => 0,
-                }
+            if frame_id == MAX_FRAMES - 1 {
+                println!("Final frame");
+                score += current.roll_1.unwrap_or(0)
+                    + current.roll_2.unwrap_or(0)
+                    + current.roll_3.unwrap_or(0);
             } else {
-                score += current.roll_1.unwrap_or(0) + current.roll_2.unwrap_or(0);
+                let next = self.past_frames.get(frame_id + 1);
+                let next_2 = self.past_frames.get(frame_id + 2);
+
+                if current.roll_1.unwrap_or(0) == STRIKE_SCORE {
+                    score += STRIKE_SCORE;
+
+                    match next {
+                        Some(frame_1) => {
+                            let a = frame_1.roll_1.unwrap_or(0);
+                            score += a;
+                            if a == STRIKE_SCORE {
+                                match next_2 {
+                                    Some(frame_2) => {
+                                        score += frame_2.roll_1.unwrap_or(0);
+                                    }
+                                    None => {}
+                                }
+                            } else {
+                                score += frame_1.roll_2.unwrap_or(0);
+                            }
+                        }
+                        None => {}
+                    }
+                } else if current.roll_1.unwrap_or(0) + current.roll_2.unwrap_or(0) == STRIKE_SCORE
+                {
+                    score += STRIKE_SCORE;
+                    score += match next {
+                        Some(frame) => frame.roll_1.unwrap_or(0),
+                        None => 0,
+                    }
+                } else {
+                    score += current.roll_1.unwrap_or(0) + current.roll_2.unwrap_or(0);
+                }
             }
         }
 
