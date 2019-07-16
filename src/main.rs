@@ -2,6 +2,7 @@ type GameScore = u64;
 
 enum FrameType {
     OneBowl(GameScore),
+    TwoBowl(GameScore, GameScore),
 }
 
 const MAX_FRAMES: usize = 10;
@@ -20,19 +21,24 @@ impl Game {
     }
 
     fn roll(&mut self, pins: GameScore) {
-        if let Some(current_frame) = self.frames.last() {
+        // self.frames[0] = FrameType::OneBowl(0);
 
-        } else {
-            println!("Pushing");
-            self.frames.push(FrameType::OneBowl(pins));
-        }
+        match self.frames.pop() {
+            Some(FrameType::OneBowl(first_pins)) => {
+                self.frames.push(FrameType::TwoBowl(first_pins, pins));
+            }
+            None => {
+                self.frames.push(FrameType::OneBowl(pins));
+            }
+            _ => {}
+        };
     }
 
     fn score(&self) -> GameScore {
-        if let Some(FrameType::OneBowl(pins)) = self.frames.last() {
-            *pins
-        } else {
-            0
+        match self.frames.last() {
+            Some(FrameType::OneBowl(pins)) => *pins,
+            Some(FrameType::TwoBowl(first_pins, second_pins)) => *first_pins + *second_pins,
+            None => 0,
         }
     }
 }
