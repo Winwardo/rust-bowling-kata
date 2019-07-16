@@ -1,8 +1,11 @@
 type GameScore = u64;
 
+#[derive(Debug)]
 enum FrameType {
     OneBowl(GameScore),
     TwoBowl(GameScore, GameScore),
+    Spare(GameScore),
+    Strike,
 }
 
 const MAX_FRAMES: usize = 10;
@@ -21,25 +24,71 @@ impl Game {
     }
 
     fn roll(&mut self, pins: GameScore) {
-        // self.frames[0] = FrameType::OneBowl(0);
-
-        match self.frames.pop() {
+        println!("Roll {}", pins);
+        match &self.frames.pop() {
             Some(FrameType::OneBowl(first_pins)) => {
-                self.frames.push(FrameType::TwoBowl(first_pins, pins));
+                if first_pins + pins == STRIKE_SCORE {
+                    println!("Spare");
+                    self.frames.push(FrameType::Spare(*first_pins));
+                } else {
+                    self.frames.push(FrameType::TwoBowl(*first_pins, pins));
+                }
             }
-            None => {
-                self.frames.push(FrameType::OneBowl(pins));
+            Some(FrameType::TwoBowl(first, second)) => {
+                self.frames.push(FrameType::TwoBowl(*first, *second));
+
+                if pins == STRIKE_SCORE {
+                    self.frames.push(FrameType::Strike);
+                } else {
+                    self.frames.push(FrameType::OneBowl(pins));
+                }
             }
-            _ => {}
+            _ => {
+                if pins == STRIKE_SCORE {
+                    self.frames.push(FrameType::Strike);
+                } else {
+                    self.frames.push(FrameType::OneBowl(pins));
+                }
+            }
         };
     }
 
     fn score(&self) -> GameScore {
-        match self.frames.last() {
-            Some(FrameType::OneBowl(pins)) => *pins,
-            Some(FrameType::TwoBowl(first_pins, second_pins)) => *first_pins + *second_pins,
-            None => 0,
+        let mut score = 0;
+
+        dbg!(&self.frames);
+
+        for frame_id in 0..self.frames.len() {
+            dbg!(frame_id);
+            let current = &self.frames[frame_id];
+
+            // if &self.frames.get(frame_id + 1);
+            // let next = &self.frames[frame_id + 1];
+
+            dbg!(current);
+
+            score += match current {
+                FrameType::OneBowl(pins) => *pins,
+                FrameType::TwoBowl(first_pins, second_pins) => *first_pins + *second_pins,
+                FrameType::Spare(_) => match self.frames.get(frame_id + 1) {
+                    Some(FrameType::OneBowl(pins)) => STRIKE_SCORE + pins,
+                    Some(FrameType::TwoBowl(first_pins, _)) => STRIKE_SCORE + first_pins,
+                    _ => STRIKE_SCORE,
+                },
+                FrameType::Strike => match self.frames.get(frame_id + 1) {
+                    Some(FrameType::OneBowl(pins)) => STRIKE_SCORE + pins,
+                    Some(FrameType::TwoBowl(first_pins, second_pins)) => {
+                        STRIKE_SCORE + first_pins + second_pins
+                    }
+                    _ => STRIKE_SCORE,
+                },
+            };
+
+            // let (current, next) = frames[0]
+            // if frame_id > self.frames.
         }
+
+        score
     }
 }
 
@@ -83,6 +132,15 @@ mod tests {
         game.roll(4);
         game.roll(4);
         assert_eq!(8, game.score());
+    }
+
+    #[rstest]
+    fn three_rolls_are_4_score_is_12() {
+        let mut game = Game::new();
+        game.roll(4);
+        game.roll(4);
+        game.roll(4);
+        assert_eq!(12, game.score());
     }
 
     #[rstest]
