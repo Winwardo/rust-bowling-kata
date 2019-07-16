@@ -95,12 +95,23 @@ impl Game {
         dbg!(&self.past_frames);
 
         for frame_id in 0..self.past_frames.len() {
+            dbg!(score);
             let current = &self.past_frames[frame_id];
             let next = self.past_frames.get(frame_id + 1);
             let next_2 = self.past_frames.get(frame_id + 2);
 
-            dbg!((current));
-            score += current.roll_1.unwrap_or(0) + current.roll_2.unwrap_or(0);
+            if current.roll_1.unwrap_or(0) + current.roll_2.unwrap_or(0) == STRIKE_SCORE {
+                score += STRIKE_SCORE;
+                score += match next {
+                    Some(frame) => frame.roll_1.unwrap_or(0),
+                    None => 0,
+                }
+            } else {
+                score += current.roll_1.unwrap_or(0) + current.roll_2.unwrap_or(0);
+            }
+
+            // dbg!((current));
+            // score += current.roll_1.unwrap_or(0) + current.roll_2.unwrap_or(0);
         }
 
         score
