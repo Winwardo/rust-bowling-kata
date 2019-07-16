@@ -58,7 +58,6 @@ impl Game {
                         roll_3: None,
                     };
                     self.past_frames.push(frame);
-                // } else if frame.roll_1 + frame.roll_2.unwrap_or(0) == STRIKE_SCORE {
                 } else {
                     if frame.roll_2.is_some() {
                         let frame = Frame {
@@ -86,6 +85,7 @@ impl Game {
     }
 
     fn score(&self) -> GameScore {
+        println!("======== score");
         // match self.past_frames.last() {
         //     Some(frame) => frame.roll_1 + frame.roll_2.unwrap_or(0) + frame.roll_3.unwrap_or(0),
         //     _ => 0,
@@ -97,6 +97,8 @@ impl Game {
         dbg!(&self.past_frames);
 
         for frame_id in 0..self.past_frames.len() {
+            dbg!(score);
+            println!("checking frame {}", frame_id);
             //     dbg!(frame_id);
             let current = &self.past_frames[frame_id];
             let next = self.past_frames.get(frame_id + 1);
@@ -105,6 +107,7 @@ impl Game {
             dbg!(current);
 
             if current.is_strike() {
+                println!("current strike");
                 score += STRIKE_SCORE;
                 if let Some(next) = next {
                     score += next.roll_1;
@@ -114,6 +117,9 @@ impl Game {
                         } else {
                             score += next.roll_2.unwrap_or(0);
                         }
+                    } else if next.is_spare() {
+                        score += next.roll_2.unwrap_or(0);
+                        // score += next.
                     }
                 }
 
@@ -122,12 +128,15 @@ impl Game {
             //     None => 0,
             // }
             } else if current.is_spare() {
+                println!("current spare");
+                dbg!(next);
                 score += STRIKE_SCORE;
 
                 if let Some(next) = next {
                     score += next.roll_1;
                 }
             } else {
+                println!("current regular");
                 score += current.roll_1 + current.roll_2.unwrap_or(0);
             }
 
