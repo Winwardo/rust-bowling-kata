@@ -28,8 +28,6 @@ impl Game {
     }
 
     fn roll(&mut self, pins: GameScore) {
-        // println!("Roll {}", pins);
-
         match self.last_roll {
             Some(last_roll) => {
                 if pins + last_roll == STRIKE_SCORE {
@@ -41,12 +39,11 @@ impl Game {
                 self.last_roll = None;
             }
             None => {
-                self.last_roll = Some(pins);
-                // if pins == STRIKE_SCORE {
-                //     self.past_frames.push(FrameType::Strike);
-                // } else {
-                //     self.last_roll = Some(pins);
-                // }
+                if pins == STRIKE_SCORE {
+                    self.past_frames.push(FrameType::Strike);
+                } else {
+                    self.last_roll = Some(pins);
+                }
             }
         };
     }
@@ -60,24 +57,30 @@ impl Game {
         for frame_id in 0..self.past_frames.len() {
             dbg!(frame_id);
             let current = &self.past_frames[frame_id];
-
-            // if &self.frames.get(frame_id + 1);
-            // let next = &self.frames[frame_id + 1];
+            let next = self.past_frames.get(frame_id + 1);
+            let next_2 = self.past_frames.get(frame_id + 2);
 
             dbg!(current);
 
             score += match current {
                 FrameType::Regular(first, second) => *first + *second,
-                FrameType::Spare(_, _) => match self.past_frames.get(frame_id + 1) {
+                FrameType::Spare(_, _) => match next {
                     Some(FrameType::Regular(first, _)) => STRIKE_SCORE + first,
                     Some(FrameType::Spare(first, _)) => STRIKE_SCORE + first,
                     Some(FrameType::Strike) => STRIKE_SCORE + STRIKE_SCORE,
                     None => STRIKE_SCORE + self.last_roll.unwrap_or(0),
                 },
-                _ => {
-                    println!("Not ready");
-                    0
-                }
+                FrameType::Strike => match next {
+                    Some(FrameType::Regular(first, second)) => STRIKE_SCORE + first + second,
+                    Some(FrameType::Spare(first, second)) => STRIKE_SCORE + first + second,
+                    Some(FrameType::Strike) => match next_2 {
+                        Some(FrameType::Regular(first, _)) => STRIKE_SCORE + STRIKE_SCORE + first,
+                        Some(FrameType::Spare(first, _)) => STRIKE_SCORE + STRIKE_SCORE + first,
+                        Some(FrameType::Strike) => STRIKE_SCORE + STRIKE_SCORE + STRIKE_SCORE,
+                        None => STRIKE_SCORE + STRIKE_SCORE + self.last_roll.unwrap_or(0),
+                    },
+                    None => STRIKE_SCORE + self.last_roll.unwrap_or(0),
+                },
             };
 
             // let (current, next) = frames[0]
