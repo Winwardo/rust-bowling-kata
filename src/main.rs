@@ -28,7 +28,7 @@ impl Game {
     }
 
     fn roll(&mut self, pins: GameScore) {
-        println!("Roll {}", pins);
+        // println!("Roll {}", pins);
 
         match self.last_roll {
             Some(last_roll) => {
@@ -41,16 +41,18 @@ impl Game {
                 self.last_roll = None;
             }
             None => {
-                if pins == STRIKE_SCORE {
-                    self.past_frames.push(FrameType::Strike);
-                } else {
-                    self.last_roll = Some(pins);
-                }
+                self.last_roll = Some(pins);
+                // if pins == STRIKE_SCORE {
+                //     self.past_frames.push(FrameType::Strike);
+                // } else {
+                //     self.last_roll = Some(pins);
+                // }
             }
         };
     }
 
     fn score(&self) -> GameScore {
+        dbg!(self.last_roll);
         let mut score = self.last_roll.unwrap_or(0);
 
         dbg!(&self.past_frames);
@@ -66,19 +68,12 @@ impl Game {
 
             score += match current {
                 FrameType::Regular(first, second) => *first + *second,
-                //     FrameType::TwoBowl(first_pins, second_pins) => *first_pins + *second_pins,
-                //     FrameType::Spare(_) => match self.past_frames.get(frame_id + 1) {
-                //         Some(FrameType::OneBowl(pins)) => STRIKE_SCORE + pins,
-                //         Some(FrameType::TwoBowl(first_pins, _)) => STRIKE_SCORE + first_pins,
-                //         _ => STRIKE_SCORE,
-                //     },
-                //     FrameType::Strike => match self.past_frames.get(frame_id + 1) {
-                //         Some(FrameType::OneBowl(pins)) => STRIKE_SCORE + pins,
-                //         Some(FrameType::TwoBowl(first_pins, second_pins)) => {
-                //             STRIKE_SCORE + first_pins + second_pins
-                //         }
-                //         _ => STRIKE_SCORE,
-                //     },
+                FrameType::Spare(_, _) => match self.past_frames.get(frame_id + 1) {
+                    Some(FrameType::Regular(first, _)) => STRIKE_SCORE + first,
+                    Some(FrameType::Spare(first, _)) => STRIKE_SCORE + first,
+                    Some(FrameType::Strike) => STRIKE_SCORE + STRIKE_SCORE,
+                    None => STRIKE_SCORE + self.last_roll.unwrap_or(0),
+                },
                 _ => {
                     println!("Not ready");
                     0
