@@ -47,19 +47,35 @@ impl Game {
 
     fn roll(&mut self, pins: GameScore) {
         dbg!(pins);
-        match self.past_frames.last_mut() {
-            Some(ref mut frame) => {
-                println!("Some frame");
-                if frame.roll_1 == STRIKE_SCORE {
-                    println!("strike");
-                    let frame = Frame {
-                        roll_1: pins,
-                        roll_2: None,
-                        roll_3: None,
-                    };
-                    self.past_frames.push(frame);
-                } else {
-                    if frame.roll_2.is_some() {
+
+        if self.past_frames.len() == 9 {
+            match self.past_frames.last_mut() {
+                Some(ref mut frame) => {
+                    if frame.roll_3.is_some() {
+                        panic!("Too many rolls");
+                    } else {
+                        if frame.roll_2.is_some() {
+                            if frame.roll_1 + frame.roll_2.unwrap() >= STRIKE_SCORE {
+                                // allow an extra ball for a spare
+                                frame.roll_3 = Some(pins);
+                            }
+                        } else {
+                            // not done the secon roll yet
+                            if frame.roll_1 == STRIKE_SCORE {
+                                frame.roll_2 = Some(pins);
+                            } else {
+                            }
+                        }
+                    }
+                }
+                _ => panic!("hi"),
+            };
+        } else {
+            match self.past_frames.last_mut() {
+                Some(ref mut frame) => {
+                    println!("Some frame");
+                    if frame.roll_1 == STRIKE_SCORE {
+                        println!("strike");
                         let frame = Frame {
                             roll_1: pins,
                             roll_2: None,
@@ -67,21 +83,30 @@ impl Game {
                         };
                         self.past_frames.push(frame);
                     } else {
-                        println!("not a strike");
-                        frame.roll_2 = Some(pins);
+                        if frame.roll_2.is_some() {
+                            let frame = Frame {
+                                roll_1: pins,
+                                roll_2: None,
+                                roll_3: None,
+                            };
+                            self.past_frames.push(frame);
+                        } else {
+                            println!("not a strike");
+                            frame.roll_2 = Some(pins);
+                        }
                     }
                 }
-            }
-            _ => {
-                println!("empty frame");
-                let frame = Frame {
-                    roll_1: pins,
-                    roll_2: None,
-                    roll_3: None,
-                };
-                self.past_frames.push(frame);
-            }
-        };
+                _ => {
+                    println!("empty frame");
+                    let frame = Frame {
+                        roll_1: pins,
+                        roll_2: None,
+                        roll_3: None,
+                    };
+                    self.past_frames.push(frame);
+                }
+            };
+        }
     }
 
     fn score(&self) -> GameScore {
@@ -105,6 +130,8 @@ impl Game {
             let next_2 = self.past_frames.get(frame_id + 2);
 
             dbg!(current);
+
+            // let current_score = current.roll_1 + current
 
             if current.is_strike() {
                 println!("current strike");
