@@ -9,18 +9,31 @@ const MAX_ROLL_COUNT: usize = (MAX_FRAMES * 2) + 1;
 
 const STRIKE_SCORE: GameScore = 10;
 
-struct Game {}
+struct Game {
+    frames: Vec<FrameType>,
+}
 
 #[allow(dead_code)]
 impl Game {
     fn new() -> Game {
-        Game {}
+        Game { frames: Vec::new() }
     }
 
-    fn roll(&mut self, pins: GameScore) {}
+    fn roll(&mut self, pins: GameScore) {
+        if let Some(current_frame) = self.frames.last() {
+
+        } else {
+            println!("Pushing");
+            self.frames.push(FrameType::OneBowl(pins));
+        }
+    }
 
     fn score(&self) -> GameScore {
-        0
+        if let Some(FrameType::OneBowl(pins)) = self.frames.last() {
+            *pins
+        } else {
+            0
+        }
     }
 }
 
