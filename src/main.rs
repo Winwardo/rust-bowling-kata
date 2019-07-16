@@ -2,9 +2,8 @@ type GameScore = u64;
 
 #[derive(Debug)]
 enum FrameType {
-    OneBowl(GameScore),
-    TwoBowl(GameScore, GameScore),
-    Spare(GameScore),
+    Regular(GameScore, GameScore),
+    Spare(GameScore, GameScore),
     Strike,
 }
 
@@ -14,53 +13,51 @@ const MAX_ROLL_COUNT: usize = (MAX_FRAMES * 2) + 1;
 const STRIKE_SCORE: GameScore = 10;
 
 struct Game {
-    frames: Vec<FrameType>,
+    // current_frame: Option<FrameType>,
+    last_roll: Option<GameScore>,
+    past_frames: Vec<FrameType>,
 }
 
 #[allow(dead_code)]
 impl Game {
     fn new() -> Game {
-        Game { frames: Vec::new() }
+        Game {
+            last_roll: None,
+            past_frames: Vec::new(),
+        }
     }
 
     fn roll(&mut self, pins: GameScore) {
         println!("Roll {}", pins);
-        match &self.frames.pop() {
-            Some(FrameType::OneBowl(first_pins)) => {
-                if first_pins + pins == STRIKE_SCORE {
-                    println!("Spare");
-                    self.frames.push(FrameType::Spare(*first_pins));
-                } else {
-                    self.frames.push(FrameType::TwoBowl(*first_pins, pins));
-                }
-            }
-            Some(FrameType::TwoBowl(first, second)) => {
-                self.frames.push(FrameType::TwoBowl(*first, *second));
 
-                if pins == STRIKE_SCORE {
-                    self.frames.push(FrameType::Strike);
+        match self.last_roll {
+            Some(last_roll) => {
+                if pins + last_roll == STRIKE_SCORE {
+                    self.past_frames.push(FrameType::Spare(last_roll, pins));
                 } else {
-                    self.frames.push(FrameType::OneBowl(pins));
+                    self.past_frames.push(FrameType::Regular(last_roll, pins));
                 }
+
+                self.last_roll = None;
             }
-            _ => {
+            None => {
                 if pins == STRIKE_SCORE {
-                    self.frames.push(FrameType::Strike);
+                    self.past_frames.push(FrameType::Strike);
                 } else {
-                    self.frames.push(FrameType::OneBowl(pins));
+                    self.last_roll = Some(pins);
                 }
             }
         };
     }
 
     fn score(&self) -> GameScore {
-        let mut score = 0;
+        let mut score = self.last_roll.unwrap_or(0);
 
-        dbg!(&self.frames);
+        dbg!(&self.past_frames);
 
-        for frame_id in 0..self.frames.len() {
+        for frame_id in 0..self.past_frames.len() {
             dbg!(frame_id);
-            let current = &self.frames[frame_id];
+            let current = &self.past_frames[frame_id];
 
             // if &self.frames.get(frame_id + 1);
             // let next = &self.frames[frame_id + 1];
@@ -68,20 +65,24 @@ impl Game {
             dbg!(current);
 
             score += match current {
-                FrameType::OneBowl(pins) => *pins,
-                FrameType::TwoBowl(first_pins, second_pins) => *first_pins + *second_pins,
-                FrameType::Spare(_) => match self.frames.get(frame_id + 1) {
-                    Some(FrameType::OneBowl(pins)) => STRIKE_SCORE + pins,
-                    Some(FrameType::TwoBowl(first_pins, _)) => STRIKE_SCORE + first_pins,
-                    _ => STRIKE_SCORE,
-                },
-                FrameType::Strike => match self.frames.get(frame_id + 1) {
-                    Some(FrameType::OneBowl(pins)) => STRIKE_SCORE + pins,
-                    Some(FrameType::TwoBowl(first_pins, second_pins)) => {
-                        STRIKE_SCORE + first_pins + second_pins
-                    }
-                    _ => STRIKE_SCORE,
-                },
+                FrameType::Regular(first, second) => *first + *second,
+                //     FrameType::TwoBowl(first_pins, second_pins) => *first_pins + *second_pins,
+                //     FrameType::Spare(_) => match self.past_frames.get(frame_id + 1) {
+                //         Some(FrameType::OneBowl(pins)) => STRIKE_SCORE + pins,
+                //         Some(FrameType::TwoBowl(first_pins, _)) => STRIKE_SCORE + first_pins,
+                //         _ => STRIKE_SCORE,
+                //     },
+                //     FrameType::Strike => match self.past_frames.get(frame_id + 1) {
+                //         Some(FrameType::OneBowl(pins)) => STRIKE_SCORE + pins,
+                //         Some(FrameType::TwoBowl(first_pins, second_pins)) => {
+                //             STRIKE_SCORE + first_pins + second_pins
+                //         }
+                //         _ => STRIKE_SCORE,
+                //     },
+                _ => {
+                    println!("Not ready");
+                    0
+                }
             };
 
             // let (current, next) = frames[0]
