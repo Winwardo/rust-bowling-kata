@@ -100,7 +100,27 @@ impl Game {
             let next = self.past_frames.get(frame_id + 1);
             let next_2 = self.past_frames.get(frame_id + 2);
 
-            if current.roll_1.unwrap_or(0) + current.roll_2.unwrap_or(0) == STRIKE_SCORE {
+            if current.roll_1.unwrap_or(0) == STRIKE_SCORE {
+                score += STRIKE_SCORE;
+
+                match next {
+                    Some(frame_1) => {
+                        let a = frame_1.roll_1.unwrap_or(0);
+                        score += a;
+                        if a == STRIKE_SCORE {
+                            match next_2 {
+                                Some(frame_2) => {
+                                    score += frame_2.roll_1.unwrap_or(0);
+                                }
+                                None => {}
+                            }
+                        } else {
+                            score += frame_1.roll_2.unwrap_or(0);
+                        }
+                    }
+                    None => {}
+                }
+            } else if current.roll_1.unwrap_or(0) + current.roll_2.unwrap_or(0) == STRIKE_SCORE {
                 score += STRIKE_SCORE;
                 score += match next {
                     Some(frame) => frame.roll_1.unwrap_or(0),
@@ -109,9 +129,6 @@ impl Game {
             } else {
                 score += current.roll_1.unwrap_or(0) + current.roll_2.unwrap_or(0);
             }
-
-            // dbg!((current));
-            // score += current.roll_1.unwrap_or(0) + current.roll_2.unwrap_or(0);
         }
 
         score
